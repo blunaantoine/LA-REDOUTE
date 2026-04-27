@@ -338,7 +338,7 @@ export default function ProductManager() {
       <Card className="border-0 shadow-md">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            🚗 Automobile
+            Automobile
             <Badge variant="secondary">{autoProducts.length}</Badge>
           </CardTitle>
         </CardHeader>
@@ -391,7 +391,7 @@ export default function ProductManager() {
       <Card className="border-0 shadow-md">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            🌾 Agro-alimentaire
+            Agro-alimentaire
             <Badge variant="secondary">{agroProducts.length}</Badge>
           </CardTitle>
         </CardHeader>

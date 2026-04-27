@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Phone } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation, PageName } from '@/context/NavigationContext'
 
@@ -71,13 +71,22 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
             <div className="text-sm text-gray-400 space-y-2">
               <p>Lomé, Togo</p>
               <p>
-                <a href="tel:+22892501944" className="hover:text-[#00A651] transition-colors">
-                  +228 92 50 19 44
+                <Phone className="inline size-3 mr-1" />
+                <a href="tel:+22822251898" className="hover:text-[#00A651] transition-colors">
+                  +228 22 25 18 98
                 </a>
+                <span className="text-gray-600 ml-1">(Fixe)</span>
               </p>
               <p>
-                <a href="mailto:contact@laredoute.tg" className="hover:text-[#00A651] transition-colors">
-                  contact@laredoute.tg
+                <MessageCircle className="inline size-3 mr-1" />
+                <a href="https://wa.me/22892501944" target="_blank" rel="noopener noreferrer" className="hover:text-[#00A651] transition-colors">
+                  +228 92 50 19 44
+                </a>
+                <span className="text-gray-600 ml-1">(WhatsApp)</span>
+              </p>
+              <p>
+                <a href="mailto:contact@laredoutesarl.com" className="hover:text-[#00A651] transition-colors">
+                  contact@laredoutesarl.com
                 </a>
               </p>
             </div>

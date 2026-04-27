@@ -38,7 +38,7 @@ export default function CTASection({ content }: CTASectionProps) {
             className="border-white/30 text-white hover:bg-white/10 bg-transparent"
             asChild
           >
-            <a href="mailto:contact@laredoute.tg">
+            <a href="mailto:contact@laredoutesarl.com">
               Envoyer un email
               <ArrowRight className="ml-2 size-4" />
             </a>

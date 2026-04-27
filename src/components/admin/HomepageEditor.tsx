@@ -36,27 +36,27 @@ interface SiteImage {
 const contentSections = [
   {
     key: 'accueil',
-    label: '🏠 Page d\'accueil',
+    label: 'Page d\'accueil',
     keys: ['hero-badge', 'hero-title', 'hero-subtitle', 'hero-description', 'products-title', 'auto-description', 'agro-description', 'values-title', 'cta-title', 'cta-description'],
   },
   {
     key: 'automobile',
-    label: '🚗 Page Automobile',
+    label: 'Page Automobile',
     keys: ['auto-description', 'auto-page-title', 'auto-page-subtitle'],
   },
   {
     key: 'agroalimentaire',
-    label: '🌾 Page Agro-alimentaire',
+    label: 'Page Agro-alimentaire',
     keys: ['agro-description', 'agro-page-title', 'agro-page-subtitle'],
   },
   {
     key: 'about',
-    label: 'ℹ️ Page À Propos',
+    label: 'Page À Propos',
     keys: ['about-title', 'about-description', 'about-mission', 'about-vision', 'about-story', 'about-story2'],
   },
   {
     key: 'contact',
-    label: '📞 Page Contact',
+    label: 'Page Contact',
     keys: ['cta-title', 'cta-description', 'contact-info'],
   },
 ]
@@ -410,7 +410,7 @@ export default function HomepageEditor() {
               <Card className="border-0 shadow-md">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    📝 Autres contenus
+                    Autres contenus
                     <Badge variant="secondary">{otherContents.length}</Badge>
                   </CardTitle>
                 </CardHeader>

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Phone, Mail, MapPin, Clock, Send, MessageCircle, Building } from 'lucide-react'
+import { ArrowLeft, Phone, Mail, MapPin, Clock, Send, MessageCircle, Building, Car, Wheat, Info } from 'lucide-react'
 import { useNavigation } from '@/context/NavigationContext'
 
 interface ContactPageProps {
@@ -41,15 +41,15 @@ export default function ContactPage({ content }: ContactPageProps) {
     {
       icon: Phone,
       title: 'Téléphone',
-      details: ['+228 92 50 19 44'],
-      action: 'tel:+22892501944',
+      details: ['+228 22 25 18 98 (Fixe)', '+228 92 50 19 44 (WhatsApp)'],
+      action: 'tel:+22822251898',
       actionLabel: 'Appeler',
     },
     {
       icon: Mail,
       title: 'Email',
-      details: ['contact@laredoute.tg'],
-      action: 'mailto:contact@laredoute.tg',
+      details: ['contact@laredoutesarl.com'],
+      action: 'mailto:contact@laredoutesarl.com',
       actionLabel: 'Envoyer un email',
     },
     {
@@ -148,7 +148,7 @@ export default function ContactPage({ content }: ContactPageProps) {
 
                   {sent && (
                     <div className="mb-6 p-4 bg-[#00A651]/10 border border-[#00A651]/20 rounded-lg">
-                      <p className="text-[#00A651] font-medium">✓ Votre message a été envoyé avec succès ! Nous vous répondrons bientôt.</p>
+                      <p className="text-[#00A651] font-medium">Votre message a été envoyé avec succès ! Nous vous répondrons bientôt.</p>
                     </div>
                   )}
 
@@ -283,21 +283,24 @@ export default function ContactPage({ content }: ContactPageProps) {
                       className="w-full justify-start text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
                       onClick={() => navigateTo('automobile')}
                     >
-                      <span className="mr-2">🚗</span> Produits Automobile
+                      <Car className="mr-2 size-4" />
+                      Produits Automobile
                     </Button>
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
                       onClick={() => navigateTo('agroalimentaire')}
                     >
-                      <span className="mr-2">🌾</span> Produits Agro-alimentaire
+                      <Wheat className="mr-2 size-4" />
+                      Produits Agro-alimentaire
                     </Button>
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
                       onClick={() => navigateTo('about')}
                     >
-                      <span className="mr-2">ℹ️</span> À Propos
+                      <Info className="mr-2 size-4" />
+                      À Propos
                     </Button>
                   </div>
                 </CardContent>

@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Car, Search, ArrowLeft, ChevronRight } from 'lucide-react'
+import { Car, CircleDot, Droplets, Wrench, Search, ArrowLeft, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 
@@ -27,9 +27,9 @@ interface AutomobilePageProps {
 }
 
 const subcategoryConfig = [
-  { value: 'pneus', label: 'Pneus', icon: '🛞' },
-  { value: 'huiles', label: 'Huiles Moteurs', icon: '🛢️' },
-  { value: 'accessoires', label: 'Accessoires Auto', icon: '🔧' },
+  { value: 'pneus', label: 'Pneus', icon: CircleDot },
+  { value: 'huiles', label: 'Huiles Moteurs', icon: Droplets },
+  { value: 'accessoires', label: 'Accessoires Auto', icon: Wrench },
 ]
 
 export default function AutomobilePage({ content, products }: AutomobilePageProps) {
@@ -112,7 +112,7 @@ export default function AutomobilePage({ content, products }: AutomobilePageProp
                   className={activeSubcategory === sub.value ? 'bg-[#00A651] hover:bg-[#008541] text-white' : 'border-gray-200 hover:border-[#00A651] hover:text-[#00A651]'}
                   onClick={() => setActiveSubcategory(sub.value)}
                 >
-                  <span className="mr-1">{sub.icon}</span>
+                  <sub.icon className="mr-1.5 size-3.5" />
                   {sub.label}
                 </Button>
               ))}
@@ -153,7 +153,9 @@ export default function AutomobilePage({ content, products }: AutomobilePageProp
                   return (
                     <div key={sub.value} className="mb-12 last:mb-0">
                       <div className="flex items-center gap-3 mb-6">
-                        <span className="text-2xl">{sub.icon}</span>
+                        <div className="w-9 h-9 bg-[#00A651]/10 rounded-lg flex items-center justify-center">
+                          <sub.icon className="size-5 text-[#00A651]" />
+                        </div>
                         <h2 className="text-2xl font-bold text-[#1a1a1a]">{sub.label}</h2>
                         <Badge variant="secondary" className="bg-[#00A651]/10 text-[#00A651]">{subProducts.length}</Badge>
                       </div>
