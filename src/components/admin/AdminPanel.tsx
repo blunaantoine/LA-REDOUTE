@@ -14,9 +14,10 @@ interface AdminPanelProps {
   onLogin: (password: string) => Promise<boolean>
   onLogout: () => void
   onClose: () => void
+  onRefresh?: () => void
 }
 
-export default function AdminPanel({ isAuthenticated, onLogin, onLogout, onClose }: AdminPanelProps) {
+export default function AdminPanel({ isAuthenticated, onLogin, onLogout, onClose, onRefresh }: AdminPanelProps) {
   const [activeTab, setActiveTab] = useState('dashboard')
 
   const handleLogin = useCallback(async (password: string): Promise<boolean> => {
@@ -70,7 +71,7 @@ export default function AdminPanel({ isAuthenticated, onLogin, onLogout, onClose
         <div className="md:hidden bg-[#0d3d2e]/90 border-t border-white/10 px-2 py-2 flex gap-1 overflow-x-auto">
           {[
             { id: 'dashboard', label: 'Dashboard' },
-            { id: 'homepage', label: 'Accueil' },
+            { id: 'homepage', label: 'Pages' },
             { id: 'products', label: 'Produits' },
             { id: 'images', label: 'Images' },
             { id: 'partners', label: 'Partenaires' },

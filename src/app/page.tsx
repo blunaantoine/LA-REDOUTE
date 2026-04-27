@@ -1,8 +1,15 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import HomePage from '@/components/homepage/HomePage'
+import { NavigationProvider, useNavigation } from '@/context/NavigationContext'
+import AccueilPage from '@/components/pages/AccueilPage'
+import AutomobilePage from '@/components/pages/AutomobilePage'
+import AgroalimentairePage from '@/components/pages/AgroalimentairePage'
+import AboutPage from '@/components/pages/AboutPage'
+import ContactPage from '@/components/pages/ContactPage'
 import AdminPanel from '@/components/admin/AdminPanel'
+import Header from '@/components/layout/Header'
+import Footer from '@/components/layout/Footer'
 import { Loader2 } from 'lucide-react'
 
 interface SiteContent {
@@ -37,7 +44,8 @@ interface Product {
   isActive: boolean
 }
 
-export default function Home() {
+function SiteContent() {
+  const { currentPage } = useNavigation()
   const [showAdmin, setShowAdmin] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [content, setContent] = useState<Record<string, string>>({})
@@ -59,7 +67,7 @@ export default function Home() {
   const fetchData = useCallback(async () => {
     try {
       const [contentRes, imagesRes, productsRes] = await Promise.all([
-        fetch('/api/content?category=homepage'),
+        fetch('/api/content'),
         fetch('/api/images'),
         fetch('/api/products'),
       ])
@@ -68,7 +76,6 @@ export default function Home() {
       const imageData: SiteImage[] = await imagesRes.json()
       const productsData: Product[] = await productsRes.json()
 
-      // Convert content array to map
       const contentMap: Record<string, string> = {}
       if (Array.isArray(contentData)) {
         contentData.forEach((c) => {
@@ -76,7 +83,6 @@ export default function Home() {
         })
       }
 
-      // Convert images array to map
       const imageMap: Record<string, string> = {}
       if (Array.isArray(imageData)) {
         imageData.forEach((img) => {
@@ -163,13 +169,31 @@ export default function Home() {
     )
   }
 
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'accueil':
+        return <AccueilPage content={content} images={images} products={products} />
+      case 'automobile':
+        return <AutomobilePage content={content} products={products} />
+      case 'agroalimentaire':
+        return <AgroalimentairePage content={content} products={products} />
+      case 'about':
+        return <AboutPage content={content} images={images} />
+      case 'contact':
+        return <ContactPage content={content} />
+      default:
+        return <AccueilPage content={content} images={images} products={products} />
+    }
+  }
+
   return (
-    <>
-      {/* Public homepage */}
-      <HomePage
-        content={content}
-        images={images}
-        products={products}
+    <div className="min-h-screen flex flex-col">
+      <Header logoUrl={images['logo-main'] || '/logo-main.png'} />
+      <main className="flex-1">
+        {renderPage()}
+      </main>
+      <Footer
+        logoUrl={images['logo-main'] || '/logo-main.png'}
         onOpenAdmin={() => setShowAdmin(true)}
       />
 
@@ -181,9 +205,18 @@ export default function Home() {
             onLogin={handleLogin}
             onLogout={handleLogout}
             onClose={() => setShowAdmin(false)}
+            onRefresh={fetchData}
           />
         </div>
       )}
-    </>
+    </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <NavigationProvider>
+      <SiteContent />
+    </NavigationProvider>
   )
 }

@@ -95,15 +95,18 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
+    const key = searchParams.get('key')
 
-    if (!id) {
+    if (!id && !key) {
       return NextResponse.json(
-        { error: 'ID requis pour la suppression' },
+        { error: 'ID ou key requis pour la suppression' },
         { status: 400 }
       )
     }
 
-    await db.siteContent.delete({ where: { id } })
+    const whereClause = id ? { id } : { key }
+
+    await db.siteContent.delete({ where: whereClause })
 
     return NextResponse.json({ success: true })
   } catch {

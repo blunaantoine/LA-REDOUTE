@@ -34,11 +34,31 @@ interface SiteImage {
 }
 
 const contentSections = [
-  { key: 'hero', label: 'Hero', keys: ['hero-badge', 'hero-title', 'hero-subtitle', 'hero-description'] },
-  { key: 'about', label: 'À Propos', keys: ['about-title', 'about-description', 'about-mission', 'about-vision'] },
-  { key: 'products', label: 'Produits', keys: ['products-title', 'auto-description', 'agro-description'] },
-  { key: 'cta', label: 'CTA', keys: ['cta-title', 'cta-description'] },
-  { key: 'values', label: 'Valeurs', keys: ['values-title'] },
+  {
+    key: 'accueil',
+    label: '🏠 Page d\'accueil',
+    keys: ['hero-badge', 'hero-title', 'hero-subtitle', 'hero-description', 'products-title', 'auto-description', 'agro-description', 'values-title', 'cta-title', 'cta-description'],
+  },
+  {
+    key: 'automobile',
+    label: '🚗 Page Automobile',
+    keys: ['auto-description', 'auto-page-title', 'auto-page-subtitle'],
+  },
+  {
+    key: 'agroalimentaire',
+    label: '🌾 Page Agro-alimentaire',
+    keys: ['agro-description', 'agro-page-title', 'agro-page-subtitle'],
+  },
+  {
+    key: 'about',
+    label: 'ℹ️ Page À Propos',
+    keys: ['about-title', 'about-description', 'about-mission', 'about-vision', 'about-story', 'about-story2'],
+  },
+  {
+    key: 'contact',
+    label: '📞 Page Contact',
+    keys: ['cta-title', 'cta-description', 'contact-info'],
+  },
 ]
 
 const imageCategories = [
@@ -58,6 +78,10 @@ export default function HomepageEditor() {
   const [saving, setSaving] = useState<string | null>(null)
   const [editedContents, setEditedContents] = useState<Record<string, string>>({})
 
+  // New content form
+  const [newContent, setNewContent] = useState({ key: '', category: 'homepage', title: '', content: '' })
+  const [addingContent, setAddingContent] = useState(false)
+
   // New image form
   const [newImage, setNewImage] = useState({
     key: '',
@@ -72,7 +96,7 @@ export default function HomepageEditor() {
   const fetchData = useCallback(async () => {
     try {
       const [contentRes, imagesRes] = await Promise.all([
-        fetch('/api/content?category=homepage'),
+        fetch('/api/content'),
         fetch('/api/images'),
       ])
       const contentData = await contentRes.json()
@@ -114,6 +138,51 @@ export default function HomepageEditor() {
       toast({ title: 'Erreur', description: 'Erreur de connexion.', variant: 'destructive' })
     } finally {
       setSaving(null)
+    }
+  }
+
+  const handleAddContent = async () => {
+    if (!newContent.key || !newContent.content) {
+      toast({ title: 'Erreur', description: 'La clé et le contenu sont requis.', variant: 'destructive' })
+      return
+    }
+    setAddingContent(true)
+    try {
+      const res = await fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: newContent.key,
+          category: newContent.category,
+          title: newContent.title || null,
+          content: newContent.content,
+        }),
+      })
+      if (res.ok) {
+        toast({ title: 'Contenu ajouté', description: 'Le nouveau contenu a été créé.' })
+        setNewContent({ key: '', category: 'homepage', title: '', content: '' })
+        fetchData()
+      } else {
+        const data = await res.json()
+        toast({ title: 'Erreur', description: data.error || 'Impossible d\'ajouter le contenu.', variant: 'destructive' })
+      }
+    } catch {
+      toast({ title: 'Erreur', description: 'Erreur de connexion.', variant: 'destructive' })
+    } finally {
+      setAddingContent(false)
+    }
+  }
+
+  const handleDeleteContent = async (key: string) => {
+    if (!confirm(`Supprimer le contenu "${key}" ?`)) return
+    try {
+      const res = await fetch(`/api/content?key=${key}`, { method: 'DELETE' })
+      if (res.ok) {
+        toast({ title: 'Contenu supprimé' })
+        fetchData()
+      }
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de supprimer.', variant: 'destructive' })
     }
   }
 
@@ -194,8 +263,8 @@ export default function HomepageEditor() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1a1a1a]">Page d&apos;accueil</h1>
-        <p className="text-gray-500 mt-1">Gérez le contenu et les images de la page d&apos;accueil</p>
+        <h1 className="text-2xl font-bold text-[#1a1a1a]">Pages du site</h1>
+        <p className="text-gray-500 mt-1">Gérez le contenu et les images de chaque page</p>
       </div>
 
       <Tabs defaultValue="textes">
@@ -211,21 +280,156 @@ export default function HomepageEditor() {
         </TabsList>
 
         <TabsContent value="textes" className="space-y-6 mt-6">
+          {/* Add new content */}
+          <Card className="border-0 shadow-md">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Plus className="size-5 text-[#00A651]" />
+                Ajouter un contenu
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Clé (unique)</Label>
+                  <Input
+                    placeholder="ex: about-story"
+                    value={newContent.key}
+                    onChange={(e) => setNewContent({ ...newContent, key: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Titre (optionnel)</Label>
+                  <Input
+                    placeholder="Titre descriptif"
+                    value={newContent.title}
+                    onChange={(e) => setNewContent({ ...newContent, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>Contenu</Label>
+                  <Textarea
+                    placeholder="Le texte à afficher..."
+                    value={newContent.content}
+                    onChange={(e) => setNewContent({ ...newContent, content: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleAddContent}
+                disabled={addingContent}
+                className="bg-[#00A651] hover:bg-[#008541]"
+              >
+                {addingContent ? <Loader2 className="size-4 animate-spin mr-2" /> : <Plus className="size-4 mr-2" />}
+                Ajouter
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Content sections by page */}
           {contentSections.map((section) => {
             const sectionContents = contents.filter((c) => section.keys.includes(c.key))
-            if (sectionContents.length === 0) return null
+            const otherContents = contents.filter((c) => !section.keys.includes(c.key) && !contentSections.some(s => s.keys.includes(c.key) && s.key !== section.key))
 
             return (
               <Card key={section.key} className="border-0 shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-lg">{section.label}</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    {section.label}
+                    <Badge variant="secondary">{sectionContents.length}</Badge>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {sectionContents.map((content) => (
+                  {sectionContents.length === 0 ? (
+                    <p className="text-gray-400 text-sm py-4">Aucun contenu pour cette page</p>
+                  ) : (
+                    sectionContents.map((content) => (
+                      <div key={content.id} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor={content.key} className="text-sm font-medium text-gray-700">
+                            {content.key}
+                            {content.title && <span className="text-gray-400 font-normal ml-2">({content.title})</span>}
+                          </Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteContent(content.key)}
+                            className="text-red-400 hover:text-red-600 h-7 px-2"
+                          >
+                            <Trash2 className="size-3" />
+                          </Button>
+                        </div>
+                        {content.content.length > 100 ? (
+                          <Textarea
+                            id={content.key}
+                            value={editedContents[content.key] ?? content.content}
+                            onChange={(e) =>
+                              setEditedContents((prev) => ({ ...prev, [content.key]: e.target.value }))
+                            }
+                            rows={3}
+                            className="resize-none"
+                          />
+                        ) : (
+                          <Input
+                            id={content.key}
+                            value={editedContents[content.key] ?? content.content}
+                            onChange={(e) =>
+                              setEditedContents((prev) => ({ ...prev, [content.key]: e.target.value }))
+                            }
+                          />
+                        )}
+                        <Button
+                          size="sm"
+                          onClick={() => saveContent(content.key)}
+                          disabled={saving === content.key}
+                          className="bg-[#00A651] hover:bg-[#008541]"
+                        >
+                          {saving === content.key ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <Save className="size-4 mr-1" />
+                          )}
+                          Sauvegarder
+                        </Button>
+                        <Separator className="mt-4" />
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
+
+          {/* Other uncategorized content */}
+          {(() => {
+            const allKeys = contentSections.flatMap(s => s.keys)
+            const otherContents = contents.filter(c => !allKeys.includes(c.key))
+            if (otherContents.length === 0) return null
+            return (
+              <Card className="border-0 shadow-md">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    📝 Autres contenus
+                    <Badge variant="secondary">{otherContents.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {otherContents.map((content) => (
                     <div key={content.id} className="space-y-2">
-                      <Label htmlFor={content.key} className="text-sm font-medium text-gray-700">
-                        {content.key}
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor={content.key} className="text-sm font-medium text-gray-700">
+                          {content.key}
+                        </Label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteContent(content.key)}
+                          className="text-red-400 hover:text-red-600 h-7 px-2"
+                        >
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </div>
                       {content.content.length > 100 ? (
                         <Textarea
                           id={content.key}
@@ -264,7 +468,7 @@ export default function HomepageEditor() {
                 </CardContent>
               </Card>
             )
-          })}
+          })()}
         </TabsContent>
 
         <TabsContent value="images" className="space-y-6 mt-6">

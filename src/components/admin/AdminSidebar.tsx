@@ -12,7 +12,7 @@ interface AdminSidebarProps {
 
 const navItems = [
   { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-  { id: 'homepage', label: "Page d'accueil", icon: Home },
+  { id: 'homepage', label: 'Pages du site', icon: Home },
   { id: 'products', label: 'Produits', icon: Package },
   { id: 'images', label: 'Images', icon: ImageIcon },
   { id: 'partners', label: 'Partenaires', icon: Users },

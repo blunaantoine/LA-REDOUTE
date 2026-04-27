@@ -2,13 +2,24 @@
 
 import { MessageCircle } from 'lucide-react'
 import Image from 'next/image'
+import { useNavigation, PageName } from '@/context/NavigationContext'
 
 interface FooterProps {
   logoUrl: string
   onOpenAdmin: () => void
 }
 
+const quickLinks: { label: string; page: PageName }[] = [
+  { label: 'Accueil', page: 'accueil' },
+  { label: 'Automobile', page: 'automobile' },
+  { label: 'Agro-alimentaire', page: 'agroalimentaire' },
+  { label: 'À Propos', page: 'about' },
+  { label: 'Contact', page: 'contact' },
+]
+
 export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
+  const { navigateTo } = useNavigation()
+
   return (
     <footer className="bg-[#1a1a1a] text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -31,20 +42,14 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
           <div className="space-y-4">
             <h3 className="font-semibold text-white">Liens Rapides</h3>
             <ul className="space-y-2">
-              {[
-                { label: 'Accueil', href: '#accueil' },
-                { label: 'Automobile', href: '#produits' },
-                { label: 'Agro-alimentaire', href: '#produits' },
-                { label: 'À Propos', href: '#about' },
-                { label: 'Contact', href: '#contact' },
-              ].map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
+              {quickLinks.map((link) => (
+                <li key={link.page}>
+                  <button
+                    onClick={() => navigateTo(link.page)}
                     className="text-gray-400 hover:text-[#00A651] text-sm transition-colors"
                   >
                     {link.label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
