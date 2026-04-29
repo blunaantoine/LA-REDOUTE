@@ -29,9 +29,9 @@ export default function DashboardTab() {
     async function fetchStats() {
       try {
         const [productsRes, imagesRes, partnersRes] = await Promise.all([
-          fetch('/api/products?all=true'),
-          fetch('/api/images'),
-          fetch('/api/partners'),
+          fetch('/api/products?all=true', { credentials: 'include' }),
+          fetch('/api/images', { credentials: 'include' }),
+          fetch('/api/partners', { credentials: 'include' }),
         ])
         const products = await productsRes.json()
         const images = await imagesRes.json()

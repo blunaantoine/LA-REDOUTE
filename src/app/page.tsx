@@ -52,24 +52,29 @@ function SiteContent() {
   const [images, setImages] = useState<Record<string, string>>({})
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [seeded, setSeeded] = useState(false)
 
-  // Seed database on first load
+  // Seed database only once ever (localStorage guard)
   useEffect(() => {
-    if (!seeded) {
-      fetch('/api/seed', { method: 'POST' })
-        .then(() => setSeeded(true))
+    const alreadySeeded = localStorage.getItem('laredoute-seeded')
+    if (!alreadySeeded) {
+      fetch('/api/seed', { method: 'POST', credentials: 'include' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success || data.error) {
+            localStorage.setItem('laredoute-seeded', 'true')
+          }
+        })
         .catch(console.error)
     }
-  }, [seeded])
+  }, [])
 
   // Fetch site data
   const fetchData = useCallback(async () => {
     try {
       const [contentRes, imagesRes, productsRes] = await Promise.all([
-        fetch('/api/content'),
-        fetch('/api/images'),
-        fetch('/api/products'),
+        fetch('/api/content', { credentials: 'include' }),
+        fetch('/api/images', { credentials: 'include' }),
+        fetch('/api/products', { credentials: 'include' }),
       ])
 
       const contentData: SiteContent[] = await contentRes.json()
@@ -106,7 +111,7 @@ function SiteContent() {
 
   // Check auth status
   useEffect(() => {
-    fetch('/api/auth/check')
+    fetch('/api/auth/check', { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated) {
@@ -134,6 +139,7 @@ function SiteContent() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ password }),
       })
       const data = await res.json()
@@ -150,7 +156,7 @@ function SiteContent() {
   // Logout handler
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
       setIsAuthenticated(false)
       setShowAdmin(false)
     } catch (error) {

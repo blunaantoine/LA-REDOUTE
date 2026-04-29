@@ -62,7 +62,7 @@ export default function ImageManager() {
 
   const fetchImages = useCallback(async () => {
     try {
-      const res = await fetch('/api/images')
+      const res = await fetch('/api/images', { credentials: 'include' })
       const data = await res.json()
       setImages(Array.isArray(data) ? data : [])
     } catch (error) {
@@ -89,7 +89,7 @@ export default function ImageManager() {
         const formData = new FormData()
         formData.append('file', uploadFile)
         formData.append('category', newImage.category)
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
@@ -98,6 +98,7 @@ export default function ImageManager() {
 
       const res = await fetch('/api/images', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: newImage.key,
@@ -136,7 +137,7 @@ export default function ImageManager() {
         const formData = new FormData()
         formData.append('file', editFile)
         formData.append('category', 'edit-image')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
@@ -145,6 +146,7 @@ export default function ImageManager() {
 
       const res = await fetch('/api/images', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingImage.id,
@@ -174,7 +176,7 @@ export default function ImageManager() {
   const handleDeleteImage = async (id: string) => {
     if (!confirm('Supprimer cette image ?')) return
     try {
-      const res = await fetch(`/api/images?id=${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/images?id=${id}`, { method: 'DELETE', credentials: 'include' })
       if (res.ok) {
         toast({ title: 'Image supprimée' })
         fetchImages()

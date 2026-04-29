@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { checkAuth, unauthorizedResponse } from '@/lib/auth'
 
 export async function GET() {
   try {
@@ -17,6 +18,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!checkAuth(request)) return unauthorizedResponse()
+
     const body = await request.json()
     const { name, description, logoUrl, documentUrl, order } = body
 
@@ -42,6 +45,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    if (!checkAuth(request)) return unauthorizedResponse()
+
     const body = await request.json()
     const { id, ...data } = body
 
@@ -58,7 +63,8 @@ export async function PUT(request: NextRequest) {
     })
 
     return NextResponse.json(updated)
-  } catch {
+  } catch (error) {
+    console.error('Partner PUT error:', error)
     return NextResponse.json(
       { error: 'Erreur lors de la mise à jour du partenaire' },
       { status: 500 }
@@ -68,6 +74,8 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    if (!checkAuth(request)) return unauthorizedResponse()
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 

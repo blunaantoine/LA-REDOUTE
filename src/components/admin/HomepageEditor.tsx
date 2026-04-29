@@ -96,8 +96,8 @@ export default function HomepageEditor() {
   const fetchData = useCallback(async () => {
     try {
       const [contentRes, imagesRes] = await Promise.all([
-        fetch('/api/content'),
-        fetch('/api/images'),
+        fetch('/api/content', { credentials: 'include' }),
+        fetch('/api/images', { credentials: 'include' }),
       ])
       const contentData = await contentRes.json()
       const imageData = await imagesRes.json()
@@ -125,6 +125,7 @@ export default function HomepageEditor() {
     try {
       const res = await fetch('/api/content', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, content: editedContents[key] }),
       })
@@ -150,6 +151,7 @@ export default function HomepageEditor() {
     try {
       const res = await fetch('/api/content', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: newContent.key,
@@ -176,7 +178,7 @@ export default function HomepageEditor() {
   const handleDeleteContent = async (key: string) => {
     if (!confirm(`Supprimer le contenu "${key}" ?`)) return
     try {
-      const res = await fetch(`/api/content?key=${key}`, { method: 'DELETE' })
+      const res = await fetch(`/api/content?key=${key}`, { method: 'DELETE', credentials: 'include' })
       if (res.ok) {
         toast({ title: 'Contenu supprimé' })
         fetchData()
@@ -200,7 +202,7 @@ export default function HomepageEditor() {
         const formData = new FormData()
         formData.append('file', uploadFile)
         formData.append('category', newImage.category)
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
@@ -211,6 +213,7 @@ export default function HomepageEditor() {
 
       const res = await fetch('/api/images', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: newImage.key,
@@ -242,7 +245,7 @@ export default function HomepageEditor() {
   const handleDeleteImage = async (id: string) => {
     if (!confirm('Supprimer cette image ?')) return
     try {
-      const res = await fetch(`/api/images?id=${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/images?id=${id}`, { method: 'DELETE', credentials: 'include' })
       if (res.ok) {
         toast({ title: 'Image supprimée' })
         fetchData()

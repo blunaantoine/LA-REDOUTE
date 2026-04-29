@@ -51,7 +51,7 @@ export default function PartnerManager() {
 
   const fetchPartners = useCallback(async () => {
     try {
-      const res = await fetch('/api/partners')
+      const res = await fetch('/api/partners', { credentials: 'include' })
       const data = await res.json()
       setPartners(Array.isArray(data) ? data : [])
     } catch (error) {
@@ -80,7 +80,7 @@ export default function PartnerManager() {
         const formData = new FormData()
         formData.append('file', form.logoFile)
         formData.append('category', 'partner')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) logoUrl = uploadData.url
       }
@@ -89,13 +89,14 @@ export default function PartnerManager() {
         const formData = new FormData()
         formData.append('file', form.documentFile)
         formData.append('category', 'partner')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) documentUrl = uploadData.url
       }
 
       const res = await fetch('/api/partners', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name,
@@ -132,7 +133,7 @@ export default function PartnerManager() {
         const formData = new FormData()
         formData.append('file', editForm.logoFile)
         formData.append('category', 'partner')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) logoUrl = uploadData.url
       }
@@ -141,13 +142,14 @@ export default function PartnerManager() {
         const formData = new FormData()
         formData.append('file', editForm.documentFile)
         formData.append('category', 'partner')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) documentUrl = uploadData.url
       }
 
       const res = await fetch('/api/partners', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingPartner.id,
@@ -175,7 +177,7 @@ export default function PartnerManager() {
   const handleDeletePartner = async (id: string) => {
     if (!confirm('Supprimer ce partenaire ?')) return
     try {
-      const res = await fetch(`/api/partners?id=${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/partners?id=${id}`, { method: 'DELETE', credentials: 'include' })
       if (res.ok) {
         toast({ title: 'Partenaire supprimé' })
         fetchPartners()

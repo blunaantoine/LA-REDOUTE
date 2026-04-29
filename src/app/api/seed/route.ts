@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { checkAuth, unauthorizedResponse } from '@/lib/auth'
 
 const DEFAULT_CONTENTS = [
   // Homepage content
@@ -34,8 +35,10 @@ const DEFAULT_IMAGES = [
   { key: 'about-team', category: 'about', title: 'Photo Équipe', imageUrl: '/about-team.png' },
 ]
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    if (!checkAuth(request)) return unauthorizedResponse()
+
     let contentCreated = 0
     let imagesCreated = 0
 

@@ -84,7 +84,7 @@ export default function ProductManager() {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch('/api/products?all=true')
+      const res = await fetch('/api/products?all=true', { credentials: 'include' })
       const data = await res.json()
       setProducts(Array.isArray(data) ? data : [])
     } catch (error) {
@@ -111,7 +111,7 @@ export default function ProductManager() {
         const formData = new FormData()
         formData.append('file', form.imageFile)
         formData.append('category', form.subcategory)
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
@@ -120,6 +120,7 @@ export default function ProductManager() {
 
       const res = await fetch('/api/products', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: form.subcategory,
@@ -158,7 +159,7 @@ export default function ProductManager() {
         const formData = new FormData()
         formData.append('file', editForm.imageFile)
         formData.append('category', 'edit-product')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData })
+        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
@@ -167,6 +168,7 @@ export default function ProductManager() {
 
       const res = await fetch('/api/products', {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingProduct.id,
@@ -197,7 +199,7 @@ export default function ProductManager() {
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('Supprimer ce produit ?')) return
     try {
-      const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE', credentials: 'include' })
       if (res.ok) {
         toast({ title: 'Produit supprimé' })
         fetchProducts()
