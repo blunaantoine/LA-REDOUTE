@@ -111,11 +111,155 @@ The LA REDOUTE SARL-U website is fully functional with robust dual-auth, compreh
 
 ### Next Phase Priorities
 1. Deploy to VPS and verify Bearer token auth works in production
-2. Add drag-and-drop product reordering
+2. ~~Add drag-and-drop product reordering~~ ✅ Done (up/down arrows)
 3. Make contact form send email notifications
 4. Add API rate limiting
 5. Add analytics/visitor tracking
 6. Performance optimization (image lazy loading, code splitting)
+
+---
+
+## Session: Task 5-a — Admin Panel Major Features
+
+### Task ID: 5-a | Agent: full-stack-developer
+
+### Features Added
+
+1. **Product Search/Filter in ProductManager** (`src/components/admin/ProductManager.tsx`)
+   - Search input with magnifying glass icon — instant client-side filtering by title and description
+   - Category filter dropdown (Toutes, Automobile, Agro-alimentaire) using shadcn Select
+   - Subcategory filter dropdown (pneus, huiles, accessoires, alimentation, boissons, cereales) — dynamically filtered based on selected category
+   - Show/hide inactive products toggle with Eye/EyeOff icons and shadcn Switch
+   - Active filters bar with clearable badges and "Tout effacer" button
+   - Active/inactive product counts in header
+
+2. **Product Reorder Buttons in ProductManager**
+   - Up/down arrow buttons next to each product (ArrowUp/ArrowDown icons)
+   - Swaps `order` field with adjacent product via PUT `/api/products`
+   - Uses Promise.all for two simultaneous PUT requests
+   - Loading state per product while reordering
+   - Disabled at boundaries (first item can't go up, last can't go down)
+   - Products sorted by `order` before display
+
+3. **Bulk Toggle Active Status in ProductManager**
+   - shadcn Switch toggle next to each product (green when active, gray when inactive)
+   - Calls `authFetch('/api/products', { method: 'PUT', body: { id, isActive: !product.isActive } })`
+   - Loading spinner while toggling
+   - Visual distinction: active products full opacity, inactive products dimmed with "Inactif" badge
+   - Toast notifications confirming activation/deactivation
+
+4. **Unread Message Badge in AdminSidebar** (`src/components/admin/AdminSidebar.tsx`)
+   - Red badge with unread count next to "Messages" nav item
+   - Fetches from `/api/contact` on mount using `authFetch`
+   - Auto-refreshes every 30 seconds
+   - Badge shows "99+" for large counts
+   - Pulsing animation on badge for visibility
+   - Badge replaces active indicator dot when there are unread messages
+
+5. **Improved DashboardTab** (`src/components/admin/DashboardTab.tsx`)
+   - New "Messages" stat card (4th card in grid) with total count and unread sublabel
+   - Red gradient when unread messages exist, green when all read
+   - Unread count badge on the stat icon
+   - "Distribution des produits" section with CSS bar chart
+   - Bars show percentage of each subcategory (pneus, huiles, accessoires, alimentation, boissons, cereales)
+   - Color-coded bars per category
+   - Summary footer with Automobile/Agro-alimentaire legend + total/inactive counts
+   - 4-column grid for stat cards (was 3)
+
+6. **Contact API GET Endpoint Verified** (`src/app/api/contact/route.ts`)
+   - Already has `checkAuth` — confirmed ✅
+   - Already returns `{ messages: [...], unreadCount: N }` — confirmed ✅
+   - No changes needed
+
+### Files Modified
+- `src/components/admin/ProductManager.tsx` — Complete rewrite with search, filter, reorder, toggle
+- `src/components/admin/AdminSidebar.tsx` — Added unread badge with auto-refresh
+- `src/components/admin/DashboardTab.tsx` — Added messages stat, distribution chart
+
+### Files NOT Modified (as required)
+- `src/app/page.tsx`
+- `src/lib/auth.ts`
+- `src/lib/auth-client.ts`
+- `src/app/api/contact/route.ts`
+- Any page components (AccueilPage, AutomobilePage, etc.)
+
+### Lint Status
+- ✅ `bun run lint` passes clean with zero errors
+
+---
+
+## Session: Task 5-b — Public Pages Styling Improvements
+
+### Task ID: 5-b | Agent: frontend-styling-expert
+
+### Styling Improvements Made
+
+1. **AccueilPage** (`src/components/pages/AccueilPage.tsx`)
+   - Animated counters in hero section (500+ Clients, 200+ Products, 10+ Years) using IntersectionObserver
+   - Parallax effect on hero background shapes using Framer Motion `useScroll` + `useTransform`
+   - "Trusted by" section with placeholder brand logos (Michelin, TotalEnergies, Castrol, Nestlé, Unilever, Shell) with stagger animation
+   - CTA section with animated gradient background (heroGradientShift animation)
+   - Enhanced hover scale on product category cards (hover:scale-[1.02] → group-hover:scale-[1.02])
+   - Improved value cards with hover:scale-[1.03] effect
+
+2. **AboutPage** (`src/components/pages/AboutPage.tsx`)
+   - Stats section with gradient backgrounds on each card (from-[#00A651] to-[#008541], etc.)
+   - Animated counter effect on stats using IntersectionObserver (numbers count up when scrolled into view)
+   - "Our Team" placeholder section with 4 avatar cards (initials + gradient circle, hover scale)
+   - Timeline visual for "Our Story" section with alternating left/right cards, vertical line, and center dots
+   - Improved testimonial section with large decorative Quote marks, styled quote punctuation in green
+   - Animated CTA with gradient background
+
+3. **ContactPage** (`src/components/pages/ContactPage.tsx`)
+   - Embedded Google Maps iframe for Lomé, Togo (6.1319, 1.2228)
+   - Form fields with green focus states (focus:ring-[#00A651]/20, focus:border-[#00A651])
+   - Subtle animation on form fields when focused (Framer Motion translateX shift)
+   - Label color changes to green on focus
+   - FAQ accordion section with 6 questions using shadcn Accordion component
+   - WhatsApp card redesigned with chat bubble design (white bubble with "Bonjour! 👋" message)
+   - Improved bank info card with gradient icon and styled account details
+   - Quick links with ChevronRight arrows
+
+4. **AutomobilePage** (`src/components/pages/AutomobilePage.tsx`)
+   - Featured product highlight card at top with star badge, product image, variants, and CTA
+   - Animated filter bar with shadow on active tab, Framer Motion whileTap scale
+   - Improved product card hover: scale-[1.03], shadow-xl, image scale-110, title color change to green
+   - Hover overlay with translate-y animation for "Voir détails" text
+
+5. **AgroalimentairePage** (`src/components/pages/AgroalimentairePage.tsx`)
+   - Same featured product highlight card as AutomobilePage
+   - Same animated filter bar with shadow and whileTap
+   - Same improved product card hover effects (scale, shadow, image zoom, title color)
+   - Better product grid layout with ScrollReveal stagger
+
+6. **Footer** (`src/components/layout/Footer.tsx`)
+   - Newsletter subscription section with email input and "S'inscrire" button (saves to localStorage)
+   - Success state with CheckCircle2 icon and green confirmation message
+   - Social media placeholder icons (Facebook, Twitter, Instagram, LinkedIn) with hover:scale-110
+   - Improved bank info section with gradient UTB badge and bordered card
+   - "Back to top" smooth scroll button with ArrowUp icon and hover effects
+   - Removed redundant WhatsApp social icon (already has floating button)
+
+### Files Modified
+- `src/components/pages/AccueilPage.tsx` — Animated counters, parallax, trusted-by, CTA gradient, hover scale
+- `src/components/pages/AboutPage.tsx` — Gradient stats, animated counters, team, timeline, quote styling
+- `src/components/pages/ContactPage.tsx` — Maps, form focus, FAQ, WhatsApp bubble, field animations
+- `src/components/pages/AutomobilePage.tsx` — Featured product, animated filter, improved hover
+- `src/components/pages/AgroalimentairePage.tsx` — Featured product, animated filter, improved hover
+- `src/components/layout/Footer.tsx` — Newsletter, social icons, bank info, back-to-top
+
+### Files NOT Modified (as required)
+- `src/app/page.tsx`
+- `src/lib/auth.ts`
+- `src/lib/auth-client.ts`
+- Any API routes
+- Any admin components
+
+### New Dependencies
+- None (used existing Framer Motion, shadcn/ui Accordion, ScrollReveal)
+
+### Lint Status
+- ✅ `bun run lint` passes clean with zero errors
 
 ---
 

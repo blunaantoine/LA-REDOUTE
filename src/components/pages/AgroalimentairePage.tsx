@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Wheat, UtensilsCrossed, GlassWater, Sprout, Search, ArrowLeft, ChevronLeft } from 'lucide-react'
+import { Wheat, UtensilsCrossed, GlassWater, Sprout, Search, ArrowLeft, ChevronLeft, Star, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 import ProductDetailModal from '@/components/homepage/ProductDetailModal'
+import ScrollReveal from '@/components/ui/scroll-reveal'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface Product {
   id: string
@@ -28,7 +30,7 @@ interface AgroalimentairePageProps {
 }
 
 const subcategoryConfig = [
-  { value: 'alimentation', label: 'Produits Alimentaires', icon: UtensilsCrossed },
+  { value: 'alimentation', label: 'Alimentation', icon: UtensilsCrossed },
   { value: 'boissons', label: 'Boissons', icon: GlassWater },
   { value: 'cereales', label: 'Céréales & Grains', icon: Sprout },
 ]
@@ -49,6 +51,9 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
       (p.variants?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
     return matchesSubcategory && matchesSearch
   })
+
+  // Featured product: first active product with image
+  const featuredProduct = agroProducts.find(p => p.imageUrl) || agroProducts[0] || null
 
   const categoryLabels: Record<string, string> = {
     alimentation: 'Produits Alimentaires',
@@ -92,7 +97,69 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
         </div>
       </section>
 
-      {/* Filters and Search */}
+      {/* Featured Product Highlight */}
+      {featuredProduct && (
+        <ScrollReveal>
+          <section className="py-8 bg-white border-b border-gray-100">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div
+                className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#00A651]/5 to-[#00C762]/5 border border-[#00A651]/10 cursor-pointer group"
+                onClick={() => setSelectedProduct(featuredProduct)}
+              >
+                <div className="grid md:grid-cols-[1fr_2fr] gap-0">
+                  <div className="relative h-48 md:h-56 overflow-hidden">
+                    {featuredProduct.imageUrl ? (
+                      <Image
+                        src={featuredProduct.imageUrl}
+                        alt={featuredProduct.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[#00A651]/10">
+                        <Wheat className="size-12 text-[#00A651]" />
+                      </div>
+                    )}
+                    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-[#00A651] text-white px-3 py-1 rounded-full text-xs font-semibold">
+                      <Star className="size-3" />
+                      Produit vedette
+                    </div>
+                  </div>
+                  <div className="p-6 flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="size-4 text-[#00A651]" />
+                      <span className="text-xs font-medium text-[#00A651] uppercase tracking-wider">Mis en avant</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] mb-2">{featuredProduct.title}</h3>
+                    {featuredProduct.description && (
+                      <p className="text-gray-600 mb-4 line-clamp-2">{featuredProduct.description}</p>
+                    )}
+                    {featuredProduct.variants && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {featuredProduct.variants.split(',').slice(0, 4).map((v, i) => (
+                          <Badge key={i} className="bg-[#00A651]/10 text-[#00A651] text-xs">
+                            {v.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <Button
+                      size="sm"
+                      className="w-fit bg-[#00A651] hover:bg-[#008541] text-white"
+                    >
+                      Voir les détails
+                      <ChevronLeft className="mr-1 size-4 rotate-180" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
+      )}
+
+      {/* Filters and Search - Animated tab switching */}
       <section className="py-8 bg-white border-b border-gray-100 sticky top-16 sm:top-20 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
@@ -101,23 +168,39 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
               <Button
                 variant={activeSubcategory === 'all' ? 'default' : 'outline'}
                 size="sm"
-                className={activeSubcategory === 'all' ? 'bg-[#00A651] hover:bg-[#008541] text-white' : 'border-gray-200 hover:border-[#00A651] hover:text-[#00A651]'}
+                className={`relative overflow-hidden transition-all duration-300 ${
+                  activeSubcategory === 'all'
+                    ? 'bg-[#00A651] hover:bg-[#008541] text-white shadow-md shadow-[#00A651]/20'
+                    : 'border-gray-200 hover:border-[#00A651] hover:text-[#00A651]'
+                }`}
                 onClick={() => setActiveSubcategory('all')}
               >
                 Tous
               </Button>
-              {subcategoryConfig.map(sub => (
-                <Button
-                  key={sub.value}
-                  variant={activeSubcategory === sub.value ? 'default' : 'outline'}
-                  size="sm"
-                  className={activeSubcategory === sub.value ? 'bg-[#00A651] hover:bg-[#008541] text-white' : 'border-gray-200 hover:border-[#00A651] hover:text-[#00A651]'}
-                  onClick={() => setActiveSubcategory(sub.value)}
-                >
-                  <sub.icon className="mr-1.5 size-3.5" />
-                  {sub.label}
-                </Button>
-              ))}
+              <AnimatePresence mode="wait">
+                {subcategoryConfig.map(sub => (
+                  <motion.div
+                    key={sub.value}
+                    initial={false}
+                    animate={{ scale: 1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant={activeSubcategory === sub.value ? 'default' : 'outline'}
+                      size="sm"
+                      className={`relative overflow-hidden transition-all duration-300 ${
+                        activeSubcategory === sub.value
+                          ? 'bg-[#00A651] hover:bg-[#008541] text-white shadow-md shadow-[#00A651]/20'
+                          : 'border-gray-200 hover:border-[#00A651] hover:text-[#00A651]'
+                      }`}
+                      onClick={() => setActiveSubcategory(sub.value)}
+                    >
+                      <sub.icon className="mr-1.5 size-3.5" />
+                      {sub.label}
+                    </Button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
 
             {/* Search */}
@@ -125,7 +208,7 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
               <Input
                 placeholder="Rechercher un produit..."
-                className="pl-9"
+                className="pl-9 transition-all duration-200 focus:ring-[#00A651]/20 focus:border-[#00A651]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -161,10 +244,12 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
                         <Badge variant="secondary" className="bg-[#00A651]/10 text-[#00A651]">{subProducts.length}</Badge>
                       </div>
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {subProducts.map(product => (
-                          <div key={product.id} onClick={() => setSelectedProduct(product)} className="cursor-pointer">
-                            <AgroProductCard product={product} categoryLabels={categoryLabels} />
-                          </div>
+                        {subProducts.map((product, index) => (
+                          <ScrollReveal key={product.id} delay={index * 0.05}>
+                            <div onClick={() => setSelectedProduct(product)} className="cursor-pointer">
+                              <AgroProductCard product={product} categoryLabels={categoryLabels} />
+                            </div>
+                          </ScrollReveal>
                         ))}
                       </div>
                     </div>
@@ -172,10 +257,12 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
                 })
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredProducts.map(product => (
-                    <div key={product.id} onClick={() => setSelectedProduct(product)} className="cursor-pointer">
-                      <AgroProductCard product={product} categoryLabels={categoryLabels} />
-                    </div>
+                  {filteredProducts.map((product, index) => (
+                    <ScrollReveal key={product.id} delay={index * 0.05}>
+                      <div onClick={() => setSelectedProduct(product)} className="cursor-pointer">
+                        <AgroProductCard product={product} categoryLabels={categoryLabels} />
+                      </div>
+                    </ScrollReveal>
                   ))}
                 </div>
               )}
@@ -209,7 +296,7 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-[#00A651] hover:bg-[#008541] text-white"
+              className="bg-[#00A651] hover:bg-[#008541] text-white btn-primary-hover"
               asChild
             >
               <a href="https://wa.me/22892501944" target="_blank" rel="noopener noreferrer">
@@ -234,14 +321,14 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
 
 function AgroProductCard({ product, categoryLabels }: { product: Product; categoryLabels: Record<string, string> }) {
   return (
-    <Card className="overflow-hidden card-hover border border-gray-100 shadow-md group hover:scale-[1.02] transition-transform duration-300">
+    <Card className="overflow-hidden card-hover border border-gray-100 shadow-md group hover:scale-[1.03] hover:shadow-xl transition-all duration-300">
       <div className="relative h-48 bg-gray-100 overflow-hidden">
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
             alt={product.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
             unoptimized
           />
         ) : (
@@ -262,13 +349,13 @@ function AgroProductCard({ product, categoryLabels }: { product: Product; catego
         </div>
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
-          <span className="text-white font-semibold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+          <span className="text-white font-semibold text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
             Voir détails
           </span>
         </div>
       </div>
       <CardContent className="p-4">
-        <h3 className="font-semibold text-[#1a1a1a] mb-1 line-clamp-1">{product.title}</h3>
+        <h3 className="font-semibold text-[#1a1a1a] mb-1 line-clamp-1 group-hover:text-[#00A651] transition-colors">{product.title}</h3>
         {product.description && (
           <p className="text-sm text-gray-500 mb-3 line-clamp-2">{product.description}</p>
         )}

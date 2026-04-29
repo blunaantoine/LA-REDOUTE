@@ -7,13 +7,43 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Phone, Mail, MapPin, Clock, Send, MessageCircle, Building, Car, Wheat, Info, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { ArrowLeft, Phone, Mail, MapPin, Clock, Send, MessageCircle, Building, Car, Wheat, Info, Loader2, CheckCircle2, AlertCircle, ChevronRight } from 'lucide-react'
 import { useNavigation } from '@/context/NavigationContext'
 import { useToast } from '@/hooks/use-toast'
+import { motion } from 'framer-motion'
+import ScrollReveal from '@/components/ui/scroll-reveal'
 
 interface ContactPageProps {
   content: Record<string, string>
 }
+
+const faqItems = [
+  {
+    question: 'Quels types de produits proposez-vous ?',
+    answer: 'Nous proposons des produits automobiles (pneus, huiles moteurs, accessoires) et agro-alimentaires (produits alimentaires, boissons, céréales & grains). Notre catalogue comprend plus de 200 références soigneusement sélectionnées.',
+  },
+  {
+    question: 'Comment passer commande ?',
+    answer: "Vous pouvez nous contacter par téléphone, WhatsApp ou via notre formulaire de contact. Nous établissons un devis personnalisé selon vos besoins. Les commandes en gros bénéficient de tarifs préférentiels.",
+  },
+  {
+    question: 'Livrez-vous partout au Togo ?',
+    answer: "Oui, nous assurons la livraison sur tout le territoire togolais. Pour les zones reculées, un délai supplémentaire peut être nécessaire. Contactez-nous pour connaître les conditions de livraison dans votre zone.",
+  },
+  {
+    question: 'Quels sont vos modes de paiement ?',
+    answer: "Nous acceptons les paiements par virement bancaire (UTB, compte 322114950004000), chèque et espèces. Les conditions de paiement pour les professionnels peuvent être discutées au cas par cas.",
+  },
+  {
+    question: 'Proposez-vous des garanties sur vos produits ?',
+    answer: "Oui, tous nos produits sont couverts par la garantie du fabricant. Les conditions varient selon le type de produit. Notre service client est disponible pour vous accompagner en cas de réclamation.",
+  },
+  {
+    question: 'Travaillez-vous avec les entreprises ?',
+    answer: "Absolument ! Nous avons une offre dédiée aux professionnels avec des tarifs dégressifs, des conditions de paiement flexibles et un suivi personnalisé. Contactez-nous pour discuter d'un partenariat.",
+  },
+]
 
 export default function ContactPage({ content }: ContactPageProps) {
   const { navigateTo } = useNavigation()
@@ -28,6 +58,7 @@ export default function ContactPage({ content }: ContactPageProps) {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -167,11 +198,11 @@ export default function ContactPage({ content }: ContactPageProps) {
         </div>
       </section>
 
-      {/* Contact Form + Bank Info */}
+      {/* Contact Form + Sidebar */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-3 gap-8 sm:gap-12">
-            {/* Contact Form (appears BELOW sidebar on mobile) */}
+            {/* Contact Form */}
             <div className="lg:col-span-2 order-last lg:order-first">
               <Card className="border-0 shadow-lg">
                 <CardContent className="p-6 sm:p-8">
@@ -201,64 +232,99 @@ export default function ContactPage({ content }: ContactPageProps) {
 
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid sm:grid-cols-2 gap-5">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Nom complet *</Label>
+                      <motion.div
+                        animate={{ x: focusedField === 'name' ? 4 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-2"
+                      >
+                        <Label htmlFor="name" className="transition-colors duration-200" style={{ color: focusedField === 'name' ? '#00A651' : undefined }}>Nom complet *</Label>
                         <Input
                           id="name"
                           value={formState.name}
                           onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                          onFocus={() => setFocusedField('name')}
+                          onBlur={() => setFocusedField(null)}
                           placeholder="Votre nom"
                           required
                           disabled={sending}
+                          className="transition-all duration-200 focus:ring-[#00A651]/20 focus:border-[#00A651]"
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email *</Label>
+                      </motion.div>
+                      <motion.div
+                        animate={{ x: focusedField === 'email' ? 4 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-2"
+                      >
+                        <Label htmlFor="email" className="transition-colors duration-200" style={{ color: focusedField === 'email' ? '#00A651' : undefined }}>Email *</Label>
                         <Input
                           id="email"
                           type="email"
                           value={formState.email}
                           onChange={(e) => setFormState({ ...formState, email: e.target.value })}
+                          onFocus={() => setFocusedField('email')}
+                          onBlur={() => setFocusedField(null)}
                           placeholder="votre@email.com"
                           required
                           disabled={sending}
+                          className="transition-all duration-200 focus:ring-[#00A651]/20 focus:border-[#00A651]"
                         />
-                      </div>
+                      </motion.div>
                     </div>
                     <div className="grid sm:grid-cols-2 gap-5">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Téléphone</Label>
+                      <motion.div
+                        animate={{ x: focusedField === 'phone' ? 4 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-2"
+                      >
+                        <Label htmlFor="phone" className="transition-colors duration-200" style={{ color: focusedField === 'phone' ? '#00A651' : undefined }}>Téléphone</Label>
                         <Input
                           id="phone"
                           value={formState.phone}
                           onChange={(e) => setFormState({ ...formState, phone: e.target.value })}
+                          onFocus={() => setFocusedField('phone')}
+                          onBlur={() => setFocusedField(null)}
                           placeholder="+228 XX XX XX XX"
                           disabled={sending}
+                          className="transition-all duration-200 focus:ring-[#00A651]/20 focus:border-[#00A651]"
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="subject">Sujet</Label>
+                      </motion.div>
+                      <motion.div
+                        animate={{ x: focusedField === 'subject' ? 4 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-2"
+                      >
+                        <Label htmlFor="subject" className="transition-colors duration-200" style={{ color: focusedField === 'subject' ? '#00A651' : undefined }}>Sujet</Label>
                         <Input
                           id="subject"
                           value={formState.subject}
                           onChange={(e) => setFormState({ ...formState, subject: e.target.value })}
+                          onFocus={() => setFocusedField('subject')}
+                          onBlur={() => setFocusedField(null)}
                           placeholder="Objet de votre message"
                           disabled={sending}
+                          className="transition-all duration-200 focus:ring-[#00A651]/20 focus:border-[#00A651]"
                         />
-                      </div>
+                      </motion.div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Message *</Label>
+                    <motion.div
+                      animate={{ x: focusedField === 'message' ? 4 : 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="space-y-2"
+                    >
+                      <Label htmlFor="message" className="transition-colors duration-200" style={{ color: focusedField === 'message' ? '#00A651' : undefined }}>Message *</Label>
                       <Textarea
                         id="message"
                         value={formState.message}
                         onChange={(e) => setFormState({ ...formState, message: e.target.value })}
+                        onFocus={() => setFocusedField('message')}
+                        onBlur={() => setFocusedField(null)}
                         placeholder="Décrivez votre demande..."
                         rows={5}
                         required
                         disabled={sending}
+                        className="transition-all duration-200 focus:ring-[#00A651]/20 focus:border-[#00A651]"
                       />
-                    </div>
+                    </motion.div>
                     <Button
                       type="submit"
                       size="lg"
@@ -282,49 +348,60 @@ export default function ContactPage({ content }: ContactPageProps) {
               </Card>
             </div>
 
-            {/* Sidebar - Bank Info & WhatsApp (appears ABOVE form on mobile) */}
+            {/* Sidebar */}
             <div className="order-first lg:order-last space-y-6">
               {/* Bank Info */}
               <Card className="border-0 shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-[#00A651]/10 rounded-lg flex items-center justify-center">
-                      <Building className="size-5 text-[#00A651]" />
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#00A651] to-[#0d3d2e] rounded-lg flex items-center justify-center">
+                      <Building className="size-5 text-white" />
                     </div>
                     <h3 className="font-semibold text-[#1a1a1a]">Coordonnées Bancaires</h3>
                   </div>
                   <div className="space-y-3 text-sm">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="font-semibold text-[#1a1a1a]">UTB</p>
-                      <p className="text-gray-600">Compte: 322114950004000</p>
-                      <p className="text-gray-600">Devise: XOF</p>
+                    <div className="p-4 bg-gradient-to-br from-gray-50 to-[#00A651]/5 rounded-lg border border-[#00A651]/10">
+                      <p className="font-bold text-[#00A651] text-base mb-2">UTB</p>
+                      <div className="space-y-1">
+                        <p className="text-gray-600">Compte: <span className="font-mono text-[#1a1a1a] font-medium">322114950004000</span></p>
+                        <p className="text-gray-600">Devise: <span className="text-[#1a1a1a] font-medium">XOF (FCFA)</span></p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* WhatsApp */}
-              <Card className="border-0 shadow-lg bg-[#25D366]">
-                <CardContent className="p-6 text-white">
+              {/* WhatsApp with chat bubble design */}
+              <Card className="border-0 shadow-lg overflow-hidden">
+                <div className="bg-[#25D366] p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <MessageCircle className="size-8" />
+                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                      <MessageCircle className="size-6 text-white" />
+                    </div>
                     <div>
-                      <h3 className="font-semibold">WhatsApp</h3>
+                      <h3 className="font-semibold text-white">WhatsApp</h3>
                       <p className="text-white/80 text-sm">Réponse rapide</p>
                     </div>
                   </div>
-                  <p className="text-white/90 text-sm mb-4">
-                    Pour une réponse rapide, contactez-nous directement sur WhatsApp.
-                  </p>
+                  {/* Chat bubble */}
+                  <div className="bg-white rounded-2xl rounded-bl-sm p-4 mb-4 shadow-sm max-w-[85%]">
+                    <p className="text-gray-700 text-sm">
+                      Bonjour ! 👋 Comment pouvons-nous vous aider ? Envoyez-nous un message sur WhatsApp.
+                    </p>
+                    <span className="text-[10px] text-gray-400 mt-1 block text-right">Maintenant</span>
+                  </div>
+                </div>
+                <div className="bg-[#25D366] px-6 pb-6">
                   <Button
-                    className="w-full bg-white text-[#25D366] hover:bg-white/90 font-semibold"
+                    className="w-full bg-white text-[#25D366] hover:bg-white/90 font-semibold shadow-md"
                     asChild
                   >
                     <a href="https://wa.me/22892501944" target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="mr-2 size-4" />
                       Ouvrir WhatsApp
                     </a>
                   </Button>
-                </CardContent>
+                </div>
               </Card>
 
               {/* Quick Links */}
@@ -334,27 +411,36 @@ export default function ContactPage({ content }: ContactPageProps) {
                   <div className="space-y-2">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
+                      className="w-full justify-between text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
                       onClick={() => navigateTo('automobile')}
                     >
-                      <Car className="mr-2 size-4" />
-                      Produits Automobile
+                      <span className="flex items-center gap-2">
+                        <Car className="size-4" />
+                        Produits Automobile
+                      </span>
+                      <ChevronRight className="size-4" />
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
+                      className="w-full justify-between text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
                       onClick={() => navigateTo('agroalimentaire')}
                     >
-                      <Wheat className="mr-2 size-4" />
-                      Produits Agro-alimentaire
+                      <span className="flex items-center gap-2">
+                        <Wheat className="size-4" />
+                        Produits Agro-alimentaire
+                      </span>
+                      <ChevronRight className="size-4" />
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
+                      className="w-full justify-between text-gray-600 hover:text-[#00A651] hover:bg-[#00A651]/5"
                       onClick={() => navigateTo('about')}
                     >
-                      <Info className="mr-2 size-4" />
-                      À Propos
+                      <span className="flex items-center gap-2">
+                        <Info className="size-4" />
+                        À Propos
+                      </span>
+                      <ChevronRight className="size-4" />
                     </Button>
                   </div>
                 </CardContent>
@@ -363,6 +449,70 @@ export default function ContactPage({ content }: ContactPageProps) {
           </div>
         </div>
       </section>
+
+      {/* Google Maps */}
+      <ScrollReveal>
+        <section className="bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="text-center space-y-4 mb-8">
+              <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20">
+                <MapPin className="mr-1 size-3" />
+                Notre Localisation
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#1a1a1a]">Nous Trouver</h2>
+              <p className="text-gray-600">Lomé, Togo — Au cœur de l&apos;Afrique de l&apos;Ouest</p>
+            </div>
+            <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-100">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d198740.0!2d1.1228!3d6.1319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1023e1b4b3e5e3e1%3A0x0!2sLom%C3%A9%2C%20Togo!5e0!3m2!1sfr!2stg!4v1700000000000!5m2!1sfr!2stg"
+                width="100%"
+                height="400"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full"
+                title="LA REDOUTE SARL-U - Lomé, Togo"
+              />
+            </div>
+          </div>
+        </section>
+      </ScrollReveal>
+
+      {/* FAQ Section */}
+      <ScrollReveal>
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center space-y-4 mb-12">
+              <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20">
+                FAQ
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a1a]">
+                Questions Fréquentes
+              </h2>
+              <p className="text-gray-600">
+                Retrouvez les réponses aux questions les plus courantes
+              </p>
+            </div>
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-6 sm:p-8">
+                <Accordion type="single" collapsible className="w-full">
+                  {faqItems.map((item, index) => (
+                    <AccordionItem key={index} value={`faq-${index}`} className="border-gray-100">
+                      <AccordionTrigger className="text-left text-[#1a1a1a] hover:text-[#00A651] hover:no-underline transition-colors text-sm sm:text-base">
+                        {item.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-gray-600 text-sm leading-relaxed">
+                        {item.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      </ScrollReveal>
 
       {/* Sticky mobile action buttons */}
       <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] safe-area-pb">

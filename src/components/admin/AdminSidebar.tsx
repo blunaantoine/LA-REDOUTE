@@ -1,7 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { LayoutDashboard, Home, Package, Image as ImageIcon, Users, Mail, Settings, LogOut } from 'lucide-react'
 import Image from 'next/image'
+import { authFetch } from '@/lib/auth-client'
 
 interface AdminSidebarProps {
   activeTab: string
@@ -21,6 +23,27 @@ const navItems = [
 ]
 
 export default function AdminSidebar({ activeTab, onTabChange, onLogout, onClose }: AdminSidebarProps) {
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchUnreadCount() {
+      try {
+        const res = await authFetch('/api/contact')
+        if (res.ok) {
+          const data = await res.json()
+          setUnreadCount(data.unreadCount || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching unread count:', error)
+      }
+    }
+    fetchUnreadCount()
+
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <aside className="w-[260px] min-h-screen admin-sidebar-gradient text-white flex flex-col">
       {/* Logo */}
@@ -44,6 +67,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, onClose
       <nav className="flex-1 px-3 py-5 space-y-1">
         {navItems.map((item) => {
           const isActive = activeTab === item.id
+          const isMessages = item.id === 'messages'
           return (
             <button
               key={item.id}
@@ -69,12 +93,19 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, onClose
                 style={isActive ? { animation: 'iconBounce 0.5s ease-out' } : undefined}
               />
 
-              <span className={`transition-all duration-200 ${isActive ? 'tracking-wide' : ''}`}>
+              <span className={`transition-all duration-200 flex-1 text-left ${isActive ? 'tracking-wide' : ''}`}>
                 {item.label}
               </span>
 
-              {/* Active indicator dot */}
-              {isActive && (
+              {/* Unread badge for Messages */}
+              {isMessages && unreadCount > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+
+              {/* Active indicator dot (only when no badge) */}
+              {isActive && !(isMessages && unreadCount > 0) && (
                 <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#00C762] shadow-[0_0_6px_rgba(0,199,98,0.6)]" />
               )}
             </button>

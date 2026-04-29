@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Target, Eye, ArrowLeft, Users, MapPin, Clock, Shield, TrendingUp, Quote } from 'lucide-react'
+import { Target, Eye, ArrowLeft, Users, MapPin, Clock, Shield, TrendingUp, Quote, User } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,10 +16,26 @@ interface AboutPageProps {
 }
 
 const stats = [
-  { label: "Ans d'expérience", value: '10+', icon: Clock },
-  { label: 'Clients satisfaits', value: '500+', icon: Users },
-  { label: 'Produits disponibles', value: '200+', icon: Shield },
-  { label: 'Partenaires', value: '50+', icon: TrendingUp },
+  { label: "Ans d'expérience", value: 10, suffix: '+', icon: Clock, gradient: 'from-[#00A651] to-[#008541]' },
+  { label: 'Clients satisfaits', value: 500, suffix: '+', icon: Users, gradient: 'from-[#00C762] to-[#00A651]' },
+  { label: 'Produits disponibles', value: 200, suffix: '+', icon: Shield, gradient: 'from-[#0d3d2e] to-[#00A651]' },
+  { label: 'Partenaires', value: 50, suffix: '+', icon: TrendingUp, gradient: 'from-[#00A651] to-[#00C762]' },
+]
+
+const teamMembers = [
+  { name: 'Directeur Général', role: 'Direction', initials: 'DG' },
+  { name: 'Responsable Commercial', role: 'Ventes', initials: 'RC' },
+  { name: 'Responsable Logistique', role: 'Opérations', initials: 'RL' },
+  { name: 'Service Client', role: 'Support', initials: 'SC' },
+]
+
+const timelineEvents = [
+  { year: '2014', title: 'Création', description: "Fondation de LA REDOUTE SARL-U à Lomé, Togo" },
+  { year: '2016', title: 'Expansion Automobile', description: "Lancement de la division pneus et huiles moteurs" },
+  { year: '2018', title: 'Diversification', description: "Entrée sur le marché agro-alimentaire" },
+  { year: '2020', title: 'Croissance', description: "Plus de 300 clients et 20 partenaires" },
+  { year: '2023', title: 'Leadership', description: "Leader régional de la distribution professionnelle" },
+  { year: '2025', title: 'Innovation', description: "Digitalisation et modernisation de nos services" },
 ]
 
 const testimonials = [
@@ -44,6 +60,47 @@ const testimonials = [
     role: "Chef d'entreprise, Distribution Plus",
   },
 ]
+
+function AnimatedStatCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0)
+  const ref = useRef<HTMLSpanElement>(null)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true)
+          let start = 0
+          const duration = 2000
+          const stepTime = 16
+          const steps = duration / stepTime
+          const increment = target / steps
+
+          const timer = setInterval(() => {
+            start += increment
+            if (start >= target) {
+              setCount(target)
+              clearInterval(timer)
+            } else {
+              setCount(Math.floor(start))
+            }
+          }, stepTime)
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [target, hasAnimated])
+
+  return (
+    <span ref={ref} className="count-up">
+      {count}{suffix}
+    </span>
+  )
+}
 
 export default function AboutPage({ content, images }: AboutPageProps) {
   const { navigateTo } = useNavigation()
@@ -89,79 +146,80 @@ export default function AboutPage({ content, images }: AboutPageProps) {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 bg-white border-b border-gray-100">
+      {/* Stats Section with Gradient Cards */}
+      <section className="py-16 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {stats.map((stat, index) => (
               <ScrollReveal key={stat.label} delay={index * 0.1}>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-[#00A651]/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <stat.icon className="size-6 text-[#00A651]" />
+                <div className="relative overflow-hidden rounded-2xl p-6 text-center text-white group">
+                  {/* Gradient background */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-90`} />
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300" />
+                  <div className="relative z-10">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3 backdrop-blur-sm">
+                      <stat.icon className="size-6 text-white" />
+                    </div>
+                    <div className="text-3xl sm:text-4xl font-bold">
+                      <AnimatedStatCounter target={stat.value} suffix={stat.suffix} />
+                    </div>
+                    <div className="text-sm text-white/80 mt-1">{stat.label}</div>
+                  </div>
                 </div>
-                <div className="text-3xl font-bold text-[#1a1a1a]">{stat.value}</div>
-                <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
-              </div>
               </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-gradient-to-br from-[#00A651] to-[#0d3d2e] relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
-        <div className="absolute top-1/2 left-1/4 w-40 h-40 bg-white/3 rounded-full" />
-
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Quote className="size-12 text-white/20 mx-auto mb-8" />
-
-          <div className="min-h-[200px] flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentTestimonial}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, ease: 'easeInOut' }}
-                className="space-y-6"
-              >
-                <blockquote className="text-xl sm:text-2xl font-medium text-white/90 leading-relaxed italic">
-                  &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
-                </blockquote>
-                <div>
-                  <p className="text-white font-semibold text-lg">
-                    {testimonials[currentTestimonial].author}
-                  </p>
-                  <p className="text-white/60 text-sm">
-                    {testimonials[currentTestimonial].role}
-                  </p>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Dots indicator */}
-          <div className="flex justify-center gap-2 mt-8">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentTestimonial(index)}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  index === currentTestimonial
-                    ? 'bg-white w-8'
-                    : 'bg-white/30 hover:bg-white/50'
-                }`}
-                aria-label={`Témoignage ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Story Section */}
+      {/* Our Story Timeline */}
       <ScrollReveal>
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center space-y-4 mb-16">
+              <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20">
+                Notre Parcours
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a1a]">
+                Notre Histoire
+              </h2>
+            </div>
+
+            {/* Timeline */}
+            <div className="relative">
+              {/* Vertical line */}
+              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-[#00A651]/20 -translate-x-1/2" />
+
+              <div className="space-y-8 md:space-y-12">
+                {timelineEvents.map((event, index) => (
+                  <ScrollReveal key={event.year} delay={index * 0.1} direction={index % 2 === 0 ? 'left' : 'right'}>
+                    <div className={`relative flex items-start gap-6 md:gap-0 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
+                      {/* Content card */}
+                      <div className={`flex-1 ml-12 md:ml-0 ${index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12 md:text-left'}`}>
+                        <div className="bg-white rounded-xl p-5 shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300">
+                          <span className="text-sm font-bold text-[#00A651]">{event.year}</span>
+                          <h3 className="text-lg font-bold text-[#1a1a1a] mt-1">{event.title}</h3>
+                          <p className="text-gray-600 text-sm mt-1">{event.description}</p>
+                        </div>
+                      </div>
+
+                      {/* Center dot */}
+                      <div className="absolute left-4 md:left-1/2 -translate-x-1/2 flex items-center justify-center">
+                        <div className="w-4 h-4 bg-[#00A651] rounded-full border-4 border-white shadow-md z-10" />
+                      </div>
+
+                      {/* Empty space for the other side */}
+                      <div className="hidden md:block flex-1" />
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      </ScrollReveal>
+
+      {/* Story Section (Image + Text) */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -212,6 +270,104 @@ export default function AboutPage({ content, images }: AboutPageProps) {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section with Quote Marks */}
+      <section className="py-20 bg-gradient-to-br from-[#00A651] to-[#0d3d2e] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-1/2 left-1/4 w-40 h-40 bg-white/3 rounded-full" />
+
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          {/* Large decorative quote mark */}
+          <div className="relative inline-block mb-8">
+            <Quote className="size-20 text-white/10 absolute -top-4 -left-6" />
+            <Quote className="size-12 text-white/25 relative z-10" />
+          </div>
+
+          <div className="min-h-[200px] flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentTestimonial}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="space-y-6"
+              >
+                <blockquote className="text-xl sm:text-2xl font-medium text-white/90 leading-relaxed italic relative">
+                  <span className="text-[#00C762] text-4xl font-serif absolute -top-3 -left-4">&ldquo;</span>
+                  <span className="pl-6">{testimonials[currentTestimonial].quote}</span>
+                  <span className="text-[#00C762] text-4xl font-serif">&rdquo;</span>
+                </blockquote>
+                <div className="pt-2">
+                  <p className="text-white font-semibold text-lg">
+                    — {testimonials[currentTestimonial].author}
+                  </p>
+                  <p className="text-white/60 text-sm">
+                    {testimonials[currentTestimonial].role}
+                  </p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Dots indicator */}
+          <div className="flex justify-center gap-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentTestimonial(index)}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  index === currentTestimonial
+                    ? 'bg-white w-8'
+                    : 'bg-white/30 hover:bg-white/50'
+                }`}
+                aria-label={`Témoignage ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Our Team Section */}
+      <ScrollReveal>
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center space-y-4 mb-16">
+              <Badge className="bg-[#00A651]/10 text-[#00A651] border-[#00A651]/20">
+                Notre Équipe
+              </Badge>
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#1a1a1a]">
+                Les Personnes Derrière LA REDOUTE
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Une équipe dévouée et expérimentée à votre service pour garantir la meilleure qualité de produits et de service.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {teamMembers.map((member, index) => (
+                <ScrollReveal key={member.initials} delay={index * 0.1}>
+                  <Card className="text-center border-0 shadow-md card-hover group">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="w-20 h-20 bg-gradient-to-br from-[#00A651] to-[#0d3d2e] rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300">
+                        <span className="text-white font-bold text-xl">{member.initials}</span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-[#1a1a1a]">{member.name}</h3>
+                        <p className="text-sm text-gray-500">{member.role}</p>
+                      </div>
+                      <div className="flex justify-center gap-2">
+                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-[#00A651]/10 transition-colors cursor-pointer">
+                          <User className="size-3.5 text-gray-400 hover:text-[#00A651]" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
       </ScrollReveal>
 
       {/* Mission & Vision */}
@@ -227,7 +383,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
           </div>
           <div className="grid md:grid-cols-2 gap-8">
             <ScrollReveal delay={0}>
-            <Card className="border-[#00A651]/20 hover:border-[#00A651]/40 transition-colors">
+            <Card className="border-[#00A651]/20 hover:border-[#00A651]/40 transition-colors hover:shadow-lg">
               <CardContent className="p-8 space-y-4">
                 <div className="w-14 h-14 bg-[#00A651]/10 rounded-xl flex items-center justify-center">
                   <Target className="size-7 text-[#00A651]" />
@@ -240,7 +396,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
             </Card>
             </ScrollReveal>
             <ScrollReveal delay={0.1}>
-            <Card className="border-[#00A651]/20 hover:border-[#00A651]/40 transition-colors">
+            <Card className="border-[#00A651]/20 hover:border-[#00A651]/40 transition-colors hover:shadow-lg">
               <CardContent className="p-8 space-y-4">
                 <div className="w-14 h-14 bg-[#00A651]/10 rounded-xl flex items-center justify-center">
                   <Eye className="size-7 text-[#00A651]" />
@@ -302,7 +458,8 @@ export default function AboutPage({ content, images }: AboutPageProps) {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-[#00A651] relative overflow-hidden">
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#00A651] via-[#00C762] to-[#0d3d2e] bg-[length:200%_200%] animate-[heroGradientShift_6s_ease_infinite]" />
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -315,7 +472,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-white text-[#00A651] hover:bg-white/90 font-semibold"
+              className="bg-white text-[#00A651] hover:bg-white/90 font-semibold btn-primary-hover"
               onClick={() => navigateTo('contact')}
             >
               Nous Contacter

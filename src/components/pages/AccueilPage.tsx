@@ -1,13 +1,15 @@
 'use client'
 
+import { useRef, useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowRight, Award, HeadphonesIcon, Heart, Car, Wheat } from 'lucide-react'
+import { ArrowRight, Award, HeadphonesIcon, Heart, Car, Wheat, Users, Package, Calendar } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 import PartnersSection from '@/components/homepage/PartnersSection'
 import ScrollReveal from '@/components/ui/scroll-reveal'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 interface Product {
   id: string
@@ -56,8 +58,67 @@ const values = [
   },
 ]
 
+const heroCounters = [
+  { value: 500, suffix: '+', label: 'Clients satisfaits', icon: Users },
+  { value: 200, suffix: '+', label: 'Produits disponibles', icon: Package },
+  { value: 10, suffix: '+', label: "Ans d'expérience", icon: Calendar },
+]
+
+const trustedLogos = [
+  'Michelin', 'TotalEnergies', 'Castrol', 'Nestlé', 'Unilever', 'Shell',
+]
+
+function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0)
+  const ref = useRef<HTMLSpanElement>(null)
+  const [hasAnimated, setHasAnimated] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true)
+          let start = 0
+          const duration = 2000
+          const stepTime = 16
+          const steps = duration / stepTime
+          const increment = target / steps
+
+          const timer = setInterval(() => {
+            start += increment
+            if (start >= target) {
+              setCount(target)
+              clearInterval(timer)
+            } else {
+              setCount(Math.floor(start))
+            }
+          }, stepTime)
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [target, hasAnimated])
+
+  return (
+    <span ref={ref} className="count-up">
+      {count}{suffix}
+    </span>
+  )
+}
+
 export default function AccueilPage({ content, images, products, partners }: AccueilPageProps) {
   const { navigateTo } = useNavigation()
+  const heroRef = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  })
+  const shapeY1 = useTransform(scrollYProgress, [0, 1], [0, 80])
+  const shapeY2 = useTransform(scrollYProgress, [0, 1], [0, -60])
+  const shapeY3 = useTransform(scrollYProgress, [0, 1], [0, 40])
 
   const autoProducts = products.filter(p => p.subcategory === 'automobile' && p.isActive)
   const agroProducts = products.filter(p => p.subcategory === 'agroalimentaire' && p.isActive)
@@ -76,13 +137,23 @@ export default function AccueilPage({ content, images, products, partners }: Acc
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center hero-gradient overflow-hidden">
+      <section ref={heroRef} className="relative min-h-screen flex items-center hero-gradient overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="pattern-bg w-full h-full" />
         </div>
-        <div className="absolute top-20 right-10 w-72 h-72 border border-white/10 rounded-full" />
-        <div className="absolute bottom-20 left-10 w-48 h-48 border border-white/10 rounded-full" />
-        <div className="absolute top-40 left-1/4 w-24 h-24 border border-white/5 rotate-45" />
+        {/* Parallax shapes */}
+        <motion.div
+          style={{ y: shapeY1 }}
+          className="absolute top-20 right-10 w-72 h-72 border border-white/10 rounded-full"
+        />
+        <motion.div
+          style={{ y: shapeY2 }}
+          className="absolute bottom-20 left-10 w-48 h-48 border border-white/10 rounded-full"
+        />
+        <motion.div
+          style={{ y: shapeY3 }}
+          className="absolute top-40 left-1/4 w-24 h-24 border border-white/5 rotate-45"
+        />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -101,6 +172,24 @@ export default function AccueilPage({ content, images, products, partners }: Acc
               <p className="text-lg text-white/80 max-w-xl leading-relaxed">
                 {content['hero-description'] || "Distribution professionnelle de pneus, huiles moteurs et produits d'alimentation générale au Togo. Qualité, fiabilité et service exceptionnel."}
               </p>
+
+              {/* Animated Counters in Hero */}
+              <div className="flex flex-wrap gap-6 sm:gap-10">
+                {heroCounters.map((counter) => (
+                  <div key={counter.label} className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                      <counter.icon className="size-5 text-white" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-white">
+                        <AnimatedCounter target={counter.value} suffix={counter.suffix} />
+                      </div>
+                      <div className="text-xs text-white/60">{counter.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
@@ -139,6 +228,30 @@ export default function AccueilPage({ content, images, products, partners }: Acc
         </div>
       </section>
 
+      {/* Trusted By Section */}
+      <ScrollReveal>
+        <section className="py-12 bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-sm text-gray-400 font-medium mb-8 uppercase tracking-wider">
+              Ils nous font confiance
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 lg:gap-16">
+              {trustedLogos.map((name, index) => (
+                <motion.div
+                  key={name}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
+                  className="flex items-center justify-center h-10 px-4 bg-gray-50 rounded-lg border border-gray-100 text-gray-400 font-semibold text-sm tracking-wide hover:border-[#00A651]/30 hover:text-[#00A651]/60 transition-colors duration-300"
+                >
+                  {name}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </ScrollReveal>
+
       {/* Products Overview */}
       <ScrollReveal>
       <section className="py-20 bg-gray-50">
@@ -154,13 +267,13 @@ export default function AccueilPage({ content, images, products, partners }: Acc
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Automobile Card */}
-            <Card className="overflow-hidden card-hover border-0 shadow-lg">
+            <Card className="overflow-hidden card-hover border-0 shadow-lg group hover:scale-[1.02] transition-transform duration-300">
               <div className="relative h-64 overflow-hidden">
                 <Image
                   src="/products-tires.png"
                   alt="Automobile"
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 flex items-center gap-2">
@@ -198,13 +311,13 @@ export default function AccueilPage({ content, images, products, partners }: Acc
             </Card>
 
             {/* Agro-alimentaire Card */}
-            <Card className="overflow-hidden card-hover border-0 shadow-lg">
+            <Card className="overflow-hidden card-hover border-0 shadow-lg group hover:scale-[1.02] transition-transform duration-300">
               <div className="relative h-64 overflow-hidden">
                 <Image
                   src="/products-food.png"
                   alt="Agro-alimentaire"
                   fill
-                  className="object-cover"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 flex items-center gap-2">
@@ -259,7 +372,7 @@ export default function AccueilPage({ content, images, products, partners }: Acc
           <div className="grid md:grid-cols-3 gap-8">
             {values.map((value, index) => (
               <ScrollReveal key={value.title} delay={index * 0.1}>
-              <Card className="text-center border-0 shadow-lg card-hover">
+              <Card className="text-center border-0 shadow-lg card-hover hover:scale-[1.03] transition-transform duration-300">
                 <CardContent className="p-8 space-y-4">
                   <div className="w-16 h-16 bg-[#00A651]/10 rounded-2xl flex items-center justify-center mx-auto">
                     <value.icon className="size-8 text-[#00A651]" />
@@ -279,11 +392,14 @@ export default function AccueilPage({ content, images, products, partners }: Acc
         <PartnersSection partners={partners} />
       </ScrollReveal>
 
-      {/* CTA Section */}
+      {/* CTA Section with animated gradient */}
       <ScrollReveal delay={0.2}>
-      <section className="py-20 bg-[#00A651] relative overflow-hidden">
+      <section className="py-20 relative overflow-hidden">
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#00A651] via-[#00C762] to-[#0d3d2e] bg-[length:200%_200%] animate-[heroGradientShift_6s_ease_infinite]" />
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-1/2 left-1/2 w-40 h-40 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
             {content['cta-title'] || 'Prêt à Travailler Avec Nous ?'}
