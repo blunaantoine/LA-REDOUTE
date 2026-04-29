@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Home, Package, Image as ImageIcon, Users, Mail, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Home, Package, Image as ImageIcon, Users, Mail, Settings, LogOut, Activity } from 'lucide-react'
 import Image from 'next/image'
 import { authFetch } from '@/lib/auth-client'
 
@@ -14,6 +14,7 @@ interface AdminSidebarProps {
 
 const navItems = [
   { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+  { id: 'activity', label: 'Activité', icon: Activity },
   { id: 'homepage', label: 'Pages du site', icon: Home },
   { id: 'products', label: 'Produits', icon: Package },
   { id: 'images', label: 'Images', icon: ImageIcon },
@@ -54,6 +55,7 @@ export default function AdminSidebar({ activeTab, onTabChange, onLogout, onClose
             alt="LA REDOUTE"
             width={140}
             height={42}
+            style={{ width: 'auto', height: 'auto' }}
             className="h-9 w-auto object-contain brightness-0 invert"
             priority
           />

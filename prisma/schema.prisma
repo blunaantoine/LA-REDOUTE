@@ -25,6 +25,7 @@ model Product {
   title       String
   description String?
   imageUrl    String?
+  images      String?
   variants    String?
   order       Int      @default(0)
   isActive    Boolean  @default(true)
@@ -65,6 +66,15 @@ model User {
   role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(uuid())
+  action      String
+  resource    String
+  resourceId  String?
+  details     String?
+  createdAt   DateTime @default(now())
 }
 
 model ContactMessage {

@@ -1,6 +1,18 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 export default function LoadingSkeleton() {
+  const [dots, setDots] = useState('')
+
+  // Pulsing dots animation for loading text
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => prev.length >= 3 ? '' : prev + '.')
+    }, 400)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div className="min-h-screen">
       {/* Hero skeleton */}
@@ -12,6 +24,18 @@ export default function LoadingSkeleton() {
               <div className="h-16 w-96 bg-white/10 rounded-lg skeleton-pulse" />
               <div className="h-8 w-24 bg-white/10 rounded-lg skeleton-pulse" />
               <div className="h-20 w-full max-w-xl bg-white/10 rounded-lg skeleton-pulse" />
+              {/* Counter skeletons */}
+              <div className="flex gap-6">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/10 rounded-lg skeleton-pulse" />
+                    <div className="space-y-2">
+                      <div className="h-6 w-16 bg-white/10 rounded skeleton-pulse" />
+                      <div className="h-3 w-24 bg-white/10 rounded skeleton-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
               <div className="flex gap-4">
                 <div className="h-12 w-40 bg-white/10 rounded-lg skeleton-pulse" />
                 <div className="h-12 w-40 bg-white/10 rounded-lg skeleton-pulse" />
@@ -20,6 +44,10 @@ export default function LoadingSkeleton() {
             <div className="hidden lg:block">
               <div className="w-80 h-80 mx-auto bg-white/10 rounded-3xl skeleton-pulse" />
             </div>
+          </div>
+          {/* Loading text with pulsing dots */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50 text-sm tracking-wider">
+            Chargement{dots}
           </div>
         </div>
       </div>
@@ -79,6 +107,33 @@ export default function LoadingSkeleton() {
             <div className="h-12 w-48 bg-white/10 rounded-lg skeleton-pulse" />
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+// Admin panel skeleton - sidebar + content area
+export function AdminSkeleton() {
+  return (
+    <div className="flex min-h-screen">
+      {/* Sidebar skeleton */}
+      <div className="hidden md:flex flex-col w-[260px] bg-[#0d3d2e] p-6">
+        <div className="h-9 w-32 bg-white/10 rounded skeleton-pulse mb-8" />
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5, 6, 7].map(i => (
+            <div key={i} className="h-10 w-full bg-white/5 rounded-lg skeleton-pulse" />
+          ))}
+        </div>
+      </div>
+      {/* Content skeleton */}
+      <div className="flex-1 p-8 space-y-6">
+        <div className="h-28 w-full bg-gray-100 rounded-xl skeleton-pulse" />
+        <div className="grid grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-28 bg-gray-100 rounded-xl skeleton-pulse" />
+          ))}
+        </div>
+        <div className="h-64 bg-gray-100 rounded-xl skeleton-pulse" />
       </div>
     </div>
   )

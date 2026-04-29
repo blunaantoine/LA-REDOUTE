@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { generateToken } from '@/lib/auth'
+import { db } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,8 +8,18 @@ export async function POST(request: NextRequest) {
     const { password } = body
 
     const adminPassword = process.env.ADMIN_PASSWORD || 'laredoute2024'
+    const success = password === adminPassword
 
-    if (!password || password !== adminPassword) {
+    // Log login attempt
+    await db.activityLog.create({
+      data: {
+        action: 'login',
+        resource: 'auth',
+        details: success ? 'Connexion réussie' : 'Tentative de connexion échouée',
+      },
+    })
+
+    if (!password || !success) {
       return NextResponse.json(
         { success: false, error: 'Mot de passe incorrect' },
         { status: 401 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { LayoutDashboard, FileText, Package, Image as ImageIcon, Users, MessageSquare, Settings, ArrowLeft, X } from 'lucide-react'
+import { LayoutDashboard, FileText, Package, Image as ImageIcon, Users, MessageSquare, Settings, ArrowLeft, X, Activity } from 'lucide-react'
 import AdminSidebar from './AdminSidebar'
 import AdminLogin from './AdminLogin'
 import DashboardTab from './DashboardTab'
@@ -11,6 +11,7 @@ import ImageManager from './ImageManager'
 import PartnerManager from './PartnerManager'
 import MessagesTab from './MessagesTab'
 import SettingsTab from './SettingsTab'
+import ActivityLogTab from './ActivityLogTab'
 
 interface AdminPanelProps {
   isAuthenticated: boolean
@@ -47,13 +48,15 @@ export default function AdminPanel({ isAuthenticated, onLogin, onLogout, onClose
         return <MessagesTab />
       case 'settings':
         return <SettingsTab />
+      case 'activity':
+        return <ActivityLogTab />
       default:
         return <DashboardTab />
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-50 flex">
+    <div className="fixed inset-0 z-50 bg-gradient-to-br from-gray-50 via-gray-50 to-[#00A651]/5 flex">
       {/* Sidebar - hidden on mobile, shown on desktop */}
       <div className="hidden md:flex">
         <AdminSidebar
@@ -86,6 +89,7 @@ export default function AdminPanel({ isAuthenticated, onLogin, onLogout, onClose
           <div className="px-2 py-2 flex gap-1 overflow-x-auto scrollbar-hide">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+              { id: 'activity', label: 'Activité', icon: Activity },
               { id: 'homepage', label: 'Pages', icon: FileText },
               { id: 'products', label: 'Produits', icon: Package },
               { id: 'images', label: 'Images', icon: ImageIcon },

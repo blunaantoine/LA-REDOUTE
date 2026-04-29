@@ -630,3 +630,136 @@ html {
     box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
   }
 }
+
+/* ========================================
+   NEW ANIMATIONS & MICRO-INTERACTIONS
+   ======================================== */
+
+/* 11. Typewriter cursor blink */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* 12. Floating particle animation */
+@keyframes particleFloat {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--particle-opacity, 0.2);
+  }
+  50% {
+    transform: translateY(-30px) translateX(15px);
+  }
+  90% {
+    opacity: var(--particle-opacity, 0.2);
+  }
+  100% {
+    transform: translateY(-60px) translateX(-10px);
+    opacity: 0;
+  }
+}
+
+/* 13. CTA button pulse animation */
+@keyframes ctaPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 199, 98, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(0, 199, 98, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 199, 98, 0);
+  }
+}
+
+/* 14. Card tilt 3D hover effect */
+.card-tilt {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.card-tilt:hover {
+  transform: perspective(1000px) rotateX(1deg) rotateY(-1deg) translateY(-4px);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.12);
+}
+
+/* 15. Number counting animation for dashboard */
+.number-count {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.15s ease-out;
+}
+
+.number-count.counting {
+  transform: scale(1.05);
+  color: #00A651;
+}
+
+/* 16. Smooth toast slide-in from right */
+@keyframes toastSlideInRight {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-slide-in {
+  animation: toastSlideInRight 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+/* 17. Subtle border glow on focus for inputs */
+@keyframes inputGlow {
+  0% { box-shadow: 0 0 0 0 rgba(0, 166, 81, 0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(0, 166, 81, 0.1); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 166, 81, 0); }
+}
+
+.input-glow:focus {
+  animation: inputGlow 0.6s ease-out;
+}
+
+/* 18. Loading bar animation */
+@keyframes loadingBarProgress {
+  0% { transform: scaleX(0); transform-origin: left; }
+  50% { transform: scaleX(0.7); transform-origin: left; }
+  100% { transform: scaleX(1); transform-origin: left; }
+}
+
+/* 19. Gradient border animation for cards */
+@keyframes gradientBorderRotate {
+  0% { --border-angle: 0deg; }
+  100% { --border-angle: 360deg; }
+}
+
+.gradient-border-animated {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gradient-border-animated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(var(--border-angle, 0deg), #00A651, #00C762, #0d3d2e, #00A651);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gradientBorderRotate 3s linear infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gradient-border-animated:hover::before {
+  opacity: 1;
+}

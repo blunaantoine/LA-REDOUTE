@@ -1,7 +1,205 @@
 # LA REDOUTE SARL-U - Worklog
 
 ## Project Status
-The LA REDOUTE SARL-U website is fully functional with robust dual-auth, comprehensive features, polished UI, and enhanced admin panel. All core functionality verified: auth (Bearer token + cookie), CRUD operations, image upload with optimization, page transitions, scroll animations, mobile responsiveness, SEO, product search/filter/reorder, and dashboard analytics.
+The LA REDOUTE SARL-U website is fully functional with robust dual-auth, comprehensive features, polished UI, and enhanced admin panel. All core functionality verified: auth (Bearer token + cookie), CRUD operations, image upload with optimization, page transitions, scroll animations, mobile responsiveness, SEO, product search/filter/reorder, dashboard analytics, activity logging, data export, multi-image gallery, and quick edit mode.
+
+## Session: Task 4-a — Major New Admin Panel Features
+
+### Task ID: 4-a | Agent: full-stack-developer
+
+### Features Added
+
+1. **Activity Log System** (`prisma/schema.prisma` + `src/app/api/activity/route.ts` + `src/components/admin/ActivityLogTab.tsx`)
+   - New `ActivityLog` Prisma model with fields: id, action, resource, resourceId, details, createdAt
+   - Activity logging added to:
+     - `src/app/api/products/route.ts` — POST (create), PUT (update/activate/deactivate/reorder), DELETE (soft delete)
+     - `src/app/api/content/route.ts` — POST (create), PUT (update), DELETE (delete)
+     - `src/app/api/auth/login/route.ts` — POST (login success/failure)
+   - GET `/api/activity?limit=50` returns recent activity logs (auth required)
+   - ActivityLogTab component with:
+     - Timeline of recent actions grouped by date
+     - Color-coded action badges: green=create, blue=update, red=delete, yellow=login
+     - Icons per action type (Plus, Pencil, Trash2, LogIn)
+     - Relative time display ("il y a 5 minutes")
+     - Stats summary cards (count per action type)
+     - Auto-refresh button
+   - Integrated into AdminPanel (mobile nav + switch case), AdminSidebar (navItems array after dashboard)
+
+2. **Data Export Feature** (`src/app/api/export/route.ts` + DashboardTab export section)
+   - GET `/api/export?type=products|content|messages` returns CSV with BOM for UTF-8/Excel compat
+   - Products export: title, category, subcategory, variants, active status, description
+   - Content export: key, category, title, content
+   - Messages export: name, email, subject, message, read status, date
+   - Content-Disposition header for browser download
+   - Export section in DashboardTab with 3 styled buttons (products, content, messages)
+   - Loading states per export type
+
+3. **Product Image Gallery Enhancement** (`prisma/schema.prisma` + `src/components/admin/ProductManager.tsx`)
+   - New `images` field on Product model (String, stores JSON array of image URLs)
+   - ProductManager edit dialog now includes:
+     - Grid gallery of current images with primary badge on first image
+     - Hover overlay per image with "Set as Primary" (Star icon) and "Delete" (X icon) buttons
+     - Upload additional images one at a time via existing upload endpoint
+     - Primary image (first in array) synced to `imageUrl` field for backward compatibility
+   - Product row shows thumbnail gallery (primary + up to 2 extra thumbnails + "+N" counter)
+   - `parseImages` helper to safely parse JSON from `images` field
+   - Backward compatible: products without `images` field fall back to `imageUrl`
+
+4. **Quick Edit Mode for HomepageEditor** (`src/components/admin/HomepageEditor.tsx`)
+   - "Quick Edit" toggle button at top (Zap icon, green when active)
+   - When enabled, each content item shows a Zap icon button
+   - Clicking the icon opens a Popover with:
+     - Content key display
+     - Input/Textarea for quick value editing (auto-focused)
+     - Save button inside the popover
+     - Close button (X)
+   - Works for both sectioned and uncategorized content
+   - Independent from normal edit flow — saves directly via API
+
+### Files Created
+- `src/app/api/activity/route.ts` — Activity log GET endpoint
+- `src/app/api/export/route.ts` — CSV export endpoint
+- `src/components/admin/ActivityLogTab.tsx` — Activity log timeline component
+
+### Files Modified
+- `prisma/schema.prisma` — Added ActivityLog model + Product.images field
+- `src/app/api/products/route.ts` — Added activity logging to POST/PUT/DELETE + `images` field support
+- `src/app/api/content/route.ts` — Added activity logging to POST/PUT/DELETE
+- `src/app/api/auth/login/route.ts` — Added activity logging to POST
+- `src/components/admin/AdminPanel.tsx` — Added Activity tab + ActivityLogTab import + mobile nav entry
+- `src/components/admin/AdminSidebar.tsx` — Added Activity nav item after Dashboard + Activity icon import
+- `src/components/admin/DashboardTab.tsx` — Added Export section with 3 CSV export buttons
+- `src/components/admin/ProductManager.tsx` — Multi-image gallery in edit dialog + thumbnail gallery in rows
+- `src/components/admin/HomepageEditor.tsx` — Quick Edit mode toggle + Popover-based inline editing
+
+### Files NOT Modified (as required)
+- `src/app/page.tsx`
+- `src/lib/auth.ts`
+- `src/lib/auth-client.ts`
+- Any public-facing page components
+
+### Lint Status
+- ✅ `bun run lint` passes clean with zero errors
+
+---
+
+## Session: Task 4-b — Polish Styling, Fix Warnings, Add Animations
+
+### Task ID: 4-b | Agent: frontend-styling-expert
+
+### 1. Image Optimization & Warning Fixes
+All `next/image` warnings resolved across the entire codebase:
+- **`sizes` prop added** to all Image components using `fill` (14 instances across 8 files)
+  - AccueilPage (2), AutomobilePage (2), AgroalimentairePage (2), ProductsSection (2)
+  - ProductManager (1), PartnerManager (1), ImageManager (1), HomepageEditor (1)
+  - ProductDetailModal already had `sizes` on main image; related products sizes="40px"
+- **`style={{ width: 'auto', height: 'auto' }}`** added to all logo/image components where CSS overrides width/height
+  - Header.tsx, Footer.tsx, AdminSidebar.tsx, AdminLogin.tsx, AccueilPage.tsx
+  - HeroSection.tsx, AboutSection.tsx, AboutPage.tsx
+- **`loading="eager"` + `priority`** on LCP-critical logo in Header.tsx
+
+### 2. Header Component (`src/components/layout/Header.tsx`)
+- **Mobile hamburger menu** completely rebuilt with Framer Motion:
+  - Slide-in panel from right (spring animation: damping 25, stiffness 300)
+  - Dark overlay with backdrop blur (click to dismiss)
+  - Staggered nav link entrance animations (0.05s delay per link)
+  - Body scroll lock when menu is open
+  - Auto-close on resize to desktop
+- **"Nous Contacter" button** enhanced with pulse ring animation (`ctaPulse` keyframe)
+- **Scroll-based styling** enhanced with longer duration (500ms ease-out) and deeper shadow on scroll
+- **Close button** inside slide-in panel (better UX)
+
+### 3. AccueilPage Hero Section (`src/components/pages/AccueilPage.tsx`)
+- **Typewriter animation** for subtitle "SARL-U" — `TypewriterText` component with blinking cursor
+- **Floating particles** — 20 pure CSS particles with randomized size/position/duration/delay
+- **Scroll-down indicator** — `ScrollIndicator` component with Framer Motion bounce, auto-hides on scroll
+- **Counter stagger effect** — Each counter starts 0.2s after previous, with Framer Motion entrance animation
+- **`AnimatedCounter`** now accepts `delay` prop for staggered start
+
+### 4. Product Detail Modal (`src/components/homepage/ProductDetailModal.tsx`)
+- **Image skeleton loading** — Shows skeleton pulse while image loads, smooth opacity transition
+- **Lightbox zoom** — Click image to open full-screen lightbox with:
+  - Black/80 backdrop with backdrop-blur
+  - Spring animation for scale entrance
+  - Click-outside-to-close
+  - Close button in top corner
+  - Zoom icon overlay on hover
+- **ZoomIn icon** added as visual hint on image hover
+
+### 5. Admin Panel Polish
+- **AdminPanel.tsx** — Background changed from flat `bg-gray-50` to `bg-gradient-to-br from-gray-50 via-gray-50 to-[#00A651]/5`
+- **AdminLogin.tsx** — Dramatic entrance animation with Framer Motion:
+  - Card: scale 0.85→1, y 30→0, opacity 0→1 (0.6s, custom ease)
+  - Logo: fade + y translate (delay 0.2s)
+  - Lock icon: scale 0.5→1 with spring (delay 0.3s)
+  - Title: fade + y (delay 0.4s)
+  - Form: fade in (delay 0.5s)
+- **DashboardTab.tsx** — Stat cards now have gradient border effect on hover (absolute overlay, `-z-10`)
+- **ProductManager.tsx**:
+  - Row hover highlight: `hover:bg-[#00A651]/5 hover:shadow-sm` with smooth transition
+  - Better empty states with Package icon, bold title, and helper text
+  - Added `Package` import from lucide-react
+
+### 6. Loading States
+- **Enhanced LoadingSkeleton** (`src/components/ui/loading-skeleton.tsx`):
+  - Pulsing dot animation for "Chargement..." text
+  - Counter skeleton placeholders (3 items with icon + text pairs)
+  - `AdminSkeleton` export for admin panel (sidebar + content grid)
+- **LoadingBar** (`src/components/ui/loading-bar.tsx`) — New component:
+  - Thin 3px green gradient bar at top of page
+  - Uses Framer Motion scaleX animation (origin-left)
+  - Triggers on pathname change (page transitions)
+  - Integrated in `src/app/layout.tsx`
+
+### 7. CSS Animations Added (`src/app/globals.css`)
+9 new animation utilities:
+- `@keyframes blink` — Typewriter cursor blink
+- `@keyframes particleFloat` — Hero floating particles
+- `@keyframes ctaPulse` — CTA button pulse ring
+- `.card-tilt` — 3D perspective tilt on hover (1deg rotateX/Y + translateY)
+- `.number-count` / `.counting` — Dashboard stat number scale effect
+- `@keyframes toastSlideInRight` / `.toast-slide-in` — Toast slide from right
+- `@keyframes inputGlow` / `.input-glow` — Input focus glow ring
+- `@keyframes loadingBarProgress` — Loading bar animation
+- `@keyframes gradientBorderRotate` / `.gradient-border-animated` — Rotating gradient border on hover
+
+### Files Modified (18 files)
+- `src/components/layout/Header.tsx` — Mobile menu, pulse button, scroll shadow
+- `src/components/layout/Footer.tsx` — Image style fix
+- `src/components/pages/AccueilPage.tsx` — Typewriter, particles, scroll indicator, stagger counters, image fixes
+- `src/components/pages/AutomobilePage.tsx` — Image sizes fix
+- `src/components/pages/AgroalimentairePage.tsx` — Image sizes fix
+- `src/components/pages/AboutPage.tsx` — Image style fix
+- `src/components/homepage/ProductDetailModal.tsx` — Skeleton, lightbox, zoom icon
+- `src/components/homepage/HeroSection.tsx` — Image style fix
+- `src/components/homepage/ProductsSection.tsx` — Image sizes fix
+- `src/components/homepage/AboutSection.tsx` — Image style fix
+- `src/components/admin/AdminPanel.tsx` — Gradient background
+- `src/components/admin/AdminLogin.tsx` — Dramatic entrance animation, image fix
+- `src/components/admin/AdminSidebar.tsx` — Image style fix
+- `src/components/admin/DashboardTab.tsx` — Gradient border on hover
+- `src/components/admin/ProductManager.tsx` — Row hover, better empty states, image sizes fix
+- `src/components/admin/PartnerManager.tsx` — Image sizes fix
+- `src/components/admin/ImageManager.tsx` — Image sizes fix
+- `src/components/admin/HomepageEditor.tsx` — Image sizes fix
+- `src/components/ui/loading-skeleton.tsx` — Enhanced with pulsing dots, AdminSkeleton
+- `src/components/ui/loading-bar.tsx` — New component
+- `src/app/layout.tsx` — LoadingBar integration
+- `src/app/globals.css` — 9 new animation utilities
+
+### Files NOT Modified (as required)
+- `src/app/page.tsx`
+- `src/lib/auth.ts`
+- `src/lib/auth-client.ts`
+- Any API routes
+
+### New Dependencies
+- None (used existing Framer Motion, Tailwind CSS, lucide-react)
+
+### Lint Status
+- ✅ `bun run lint` passes clean with zero errors
+
+---
 
 ## Session: 2026-04-30 Round 3 — QA, Auth Fix, Admin Features & Styling Polish
 

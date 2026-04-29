@@ -113,6 +113,7 @@ export default function AutomobilePage({ content, products }: AutomobilePageProp
                         src={featuredProduct.imageUrl}
                         alt={featuredProduct.title}
                         fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                         unoptimized
                       />
@@ -329,6 +330,7 @@ function ProductCard({ product, categoryLabels }: { product: Product; categoryLa
             src={product.imageUrl}
             alt={product.title}
             fill
+            sizes="(max-width: 768px) 50vw, 33vw"
             className="object-cover group-hover:scale-110 transition-transform duration-500"
             unoptimized
           />

@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, Save, FileText, Image as ImageIcon, Plus, Trash2 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Loader2, Save, FileText, Image as ImageIcon, Plus, Trash2, Zap, X } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
 import { authFetch } from '@/lib/auth-client'
@@ -78,6 +79,12 @@ export default function HomepageEditor() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
   const [editedContents, setEditedContents] = useState<Record<string, string>>({})
+  const [quickEditMode, setQuickEditMode] = useState(false)
+
+  // Quick edit popover state
+  const [quickEditKey, setQuickEditKey] = useState<string | null>(null)
+  const [quickEditValue, setQuickEditValue] = useState('')
+  const [quickEditSaving, setQuickEditSaving] = useState(false)
 
   // New content form
   const [newContent, setNewContent] = useState({ key: '', category: 'homepage', title: '', content: '' })
@@ -145,6 +152,35 @@ export default function HomepageEditor() {
     } finally {
       setSaving(null)
     }
+  }
+
+  // Quick edit save
+  const handleQuickEditSave = async (key: string) => {
+    setQuickEditSaving(true)
+    try {
+      const res = await authFetch('/api/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key, content: quickEditValue }),
+      })
+      if (res.ok) {
+        toast({ title: 'Contenu sauvegardé', description: `Le contenu "${key}" a été mis à jour.` })
+        setEditedContents((prev) => ({ ...prev, [key]: quickEditValue }))
+        setQuickEditKey(null)
+        fetchData()
+      } else {
+        toast({ title: 'Erreur', description: 'Impossible de sauvegarder.', variant: 'destructive' })
+      }
+    } catch {
+      toast({ title: 'Erreur', description: 'Erreur de connexion.', variant: 'destructive' })
+    } finally {
+      setQuickEditSaving(false)
+    }
+  }
+
+  const openQuickEdit = (content: SiteContent) => {
+    setQuickEditKey(content.key)
+    setQuickEditValue(editedContents[content.key] ?? content.content)
   }
 
   const handleAddContent = async () => {
@@ -268,9 +304,21 @@ export default function HomepageEditor() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#1a1a1a]">Pages du site</h1>
-        <p className="text-gray-500 mt-1">Gérez le contenu et les images de chaque page</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1a1a1a]">Pages du site</h1>
+          <p className="text-gray-500 mt-1">Gérez le contenu et les images de chaque page</p>
+        </div>
+        {/* Quick Edit Toggle */}
+        <Button
+          variant={quickEditMode ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setQuickEditMode(!quickEditMode)}
+          className={`gap-2 ${quickEditMode ? 'bg-[#00A651] hover:bg-[#008541]' : ''}`}
+        >
+          <Zap className={`size-4 ${quickEditMode ? 'text-white' : 'text-[#00A651]'}`} />
+          {quickEditMode ? 'Quick Edit ON' : 'Quick Edit'}
+        </Button>
       </div>
 
       <Tabs defaultValue="textes">
@@ -356,14 +404,83 @@ export default function HomepageEditor() {
                             {content.key}
                             {content.title && <span className="text-gray-400 font-normal ml-2">({content.title})</span>}
                           </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteContent(content.key)}
-                            className="text-red-400 hover:text-red-600 h-7 px-2"
-                          >
-                            <Trash2 className="size-3" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            {/* Quick Edit button (only in quick edit mode) */}
+                            {quickEditMode && (
+                              <Popover
+                                open={quickEditKey === content.key}
+                                onOpenChange={(open) => {
+                                  if (open) {
+                                    openQuickEdit(content)
+                                  } else {
+                                    setQuickEditKey(null)
+                                  }
+                                }}
+                              >
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-[#00A651] hover:text-[#008541] hover:bg-[#00A651]/10"
+                                  >
+                                    <Zap className="size-3" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80 p-3" align="end">
+                                  <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-sm font-medium text-gray-700">{content.key}</p>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="size-6 p-0"
+                                        onClick={() => setQuickEditKey(null)}
+                                      >
+                                        <X className="size-3" />
+                                      </Button>
+                                    </div>
+                                    {content.content.length > 100 ? (
+                                      <Textarea
+                                        value={quickEditValue}
+                                        onChange={(e) => setQuickEditValue(e.target.value)}
+                                        rows={4}
+                                        className="resize-none text-sm"
+                                        autoFocus
+                                      />
+                                    ) : (
+                                      <Input
+                                        value={quickEditValue}
+                                        onChange={(e) => setQuickEditValue(e.target.value)}
+                                        className="text-sm"
+                                        autoFocus
+                                      />
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleQuickEditSave(content.key)}
+                                      disabled={quickEditSaving}
+                                      className="w-full bg-[#00A651] hover:bg-[#008541]"
+                                    >
+                                      {quickEditSaving ? (
+                                        <Loader2 className="size-3.5 animate-spin mr-1" />
+                                      ) : (
+                                        <Save className="size-3.5 mr-1" />
+                                      )}
+                                      Sauvegarder
+                                    </Button>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteContent(content.key)}
+                              className="text-red-400 hover:text-red-600 h-7 px-2"
+                            >
+                              <Trash2 className="size-3" />
+                            </Button>
+                          </div>
                         </div>
                         {content.content.length > 100 ? (
                           <Textarea
@@ -426,14 +543,82 @@ export default function HomepageEditor() {
                         <Label htmlFor={content.key} className="text-sm font-medium text-gray-700">
                           {content.key}
                         </Label>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteContent(content.key)}
-                          className="text-red-400 hover:text-red-600 h-7 px-2"
-                        >
-                          <Trash2 className="size-3" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          {quickEditMode && (
+                            <Popover
+                              open={quickEditKey === content.key}
+                              onOpenChange={(open) => {
+                                if (open) {
+                                  openQuickEdit(content)
+                                } else {
+                                  setQuickEditKey(null)
+                                }
+                              }}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-[#00A651] hover:text-[#008541] hover:bg-[#00A651]/10"
+                                >
+                                  <Zap className="size-3" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-80 p-3" align="end">
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium text-gray-700">{content.key}</p>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="size-6 p-0"
+                                      onClick={() => setQuickEditKey(null)}
+                                    >
+                                      <X className="size-3" />
+                                    </Button>
+                                  </div>
+                                  {content.content.length > 100 ? (
+                                    <Textarea
+                                      value={quickEditValue}
+                                      onChange={(e) => setQuickEditValue(e.target.value)}
+                                      rows={4}
+                                      className="resize-none text-sm"
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <Input
+                                      value={quickEditValue}
+                                      onChange={(e) => setQuickEditValue(e.target.value)}
+                                      className="text-sm"
+                                      autoFocus
+                                    />
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleQuickEditSave(content.key)}
+                                    disabled={quickEditSaving}
+                                    className="w-full bg-[#00A651] hover:bg-[#008541]"
+                                  >
+                                    {quickEditSaving ? (
+                                      <Loader2 className="size-3.5 animate-spin mr-1" />
+                                    ) : (
+                                      <Save className="size-3.5 mr-1" />
+                                    )}
+                                    Sauvegarder
+                                  </Button>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteContent(content.key)}
+                            className="text-red-400 hover:text-red-600 h-7 px-2"
+                          >
+                            <Trash2 className="size-3" />
+                          </Button>
+                        </div>
                       </div>
                       {content.content.length > 100 ? (
                         <Textarea

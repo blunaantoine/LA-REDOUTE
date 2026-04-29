@@ -99,6 +99,7 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
               alt="LA REDOUTE SARL-U"
               width={160}
               height={48}
+              style={{ width: 'auto', height: 'auto' }}
               className="h-10 w-auto object-contain brightness-0 invert"
             />
             <p className="text-gray-400 text-sm leading-relaxed">

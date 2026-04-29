@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Package, Image as ImageIcon, Users, TrendingUp, Plus, Mail, Eye, Clock, Activity, MessageSquare, BarChart3 } from 'lucide-react'
+import { Package, Image as ImageIcon, Users, TrendingUp, Plus, Mail, Eye, Clock, Activity, MessageSquare, BarChart3, Download, Loader2, FileText } from 'lucide-react'
 import { authFetch } from '@/lib/auth-client'
 
 interface ProductItem {
@@ -63,6 +63,7 @@ export default function DashboardTab() {
     categoryDistribution: {},
   })
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchStats() {
@@ -171,6 +172,18 @@ export default function DashboardTab() {
   ]
 
   // Build activity timeline from recent products
+  const handleExport = async (type: string) => {
+    setExporting(type)
+    try {
+      const token = localStorage.getItem('laredoute-admin-token')
+      const url = `/api/export?type=${type}${token ? `&token=${encodeURIComponent(token)}` : ''}`
+      window.open(url, '_blank')
+    } catch {
+      console.error('Export failed')
+    } finally {
+      setTimeout(() => setExporting(null), 1000)
+    }
+  }
   const activityTimeline = stats.recentProducts.map((product, index) => ({
     id: product.id,
     title: product.title,
@@ -212,9 +225,11 @@ export default function DashboardTab() {
         {statCards.map((stat, index) => (
           <Card
             key={stat.label}
-            className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 group"
+            className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
+            {/* Gradient border on hover */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#00A651]/0 to-[#00C762]/0 group-hover:from-[#00A651]/20 group-hover:to-[#00C762]/5 transition-all duration-500 -z-10" />
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="relative">
@@ -318,6 +333,69 @@ export default function DashboardTab() {
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Export Section */}
+      <Card className="border-0 shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Download className="size-5 text-[#00A651]" />
+            Exporter les données
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-500 mb-4">Téléchargez vos données au format CSV pour les utiliser dans Excel ou Google Sheets.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Button
+              variant="outline"
+              onClick={() => handleExport('products')}
+              disabled={exporting === 'products'}
+              className="justify-start gap-2 h-auto py-3 px-4 hover:bg-[#00A651]/5 hover:border-[#00A651]/30"
+            >
+              {exporting === 'products' ? (
+                <Loader2 className="size-4 animate-spin text-[#00A651]" />
+              ) : (
+                <Package className="size-4 text-[#00A651]" />
+              )}
+              <div className="text-left">
+                <p className="text-sm font-medium">Exporter Produits</p>
+                <p className="text-xs text-gray-400">CSV</p>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExport('content')}
+              disabled={exporting === 'content'}
+              className="justify-start gap-2 h-auto py-3 px-4 hover:bg-[#00A651]/5 hover:border-[#00A651]/30"
+            >
+              {exporting === 'content' ? (
+                <Loader2 className="size-4 animate-spin text-[#00A651]" />
+              ) : (
+                <FileText className="size-4 text-[#00A651]" />
+              )}
+              <div className="text-left">
+                <p className="text-sm font-medium">Exporter Contenu</p>
+                <p className="text-xs text-gray-400">CSV</p>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleExport('messages')}
+              disabled={exporting === 'messages'}
+              className="justify-start gap-2 h-auto py-3 px-4 hover:bg-[#00A651]/5 hover:border-[#00A651]/30"
+            >
+              {exporting === 'messages' ? (
+                <Loader2 className="size-4 animate-spin text-[#00A651]" />
+              ) : (
+                <MessageSquare className="size-4 text-[#00A651]" />
+              )}
+              <div className="text-left">
+                <p className="text-sm font-medium">Exporter Messages</p>
+                <p className="text-xs text-gray-400">CSV</p>
+              </div>
+            </Button>
+          </div>
         </CardContent>
       </Card>
 

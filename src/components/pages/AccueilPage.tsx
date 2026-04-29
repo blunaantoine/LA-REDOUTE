@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { ArrowRight, Award, HeadphonesIcon, Heart, Car, Wheat, Users, Package, Calendar } from 'lucide-react'
+import { ArrowRight, Award, HeadphonesIcon, Heart, Car, Wheat, Users, Package, Calendar, ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 import PartnersSection from '@/components/homepage/PartnersSection'
@@ -68,7 +68,47 @@ const trustedLogos = [
   'Michelin', 'TotalEnergies', 'Castrol', 'Nestlé', 'Unilever', 'Shell',
 ]
 
-function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+// Floating particles data
+const particles = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  size: Math.random() * 4 + 2,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  duration: Math.random() * 10 + 15,
+  delay: Math.random() * 5,
+  opacity: Math.random() * 0.3 + 0.1,
+}))
+
+function TypewriterText({ text, speed = 100 }: { text: string; speed?: number }) {
+  const [displayed, setDisplayed] = useState('')
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    let i = 0
+    setDisplayed('')
+    setDone(false)
+    const timer = setInterval(() => {
+      i++
+      setDisplayed(text.slice(0, i))
+      if (i >= text.length) {
+        clearInterval(timer)
+        setDone(true)
+      }
+    }, speed)
+    return () => clearInterval(timer)
+  }, [text, speed])
+
+  return (
+    <span>
+      {displayed}
+      {!done && (
+        <span className="inline-block w-[3px] h-[1em] bg-white/90 ml-1 align-middle animate-[blink_0.7s_step-end_infinite]" />
+      )}
+    </span>
+  )
+}
+
+function AnimatedCounter({ target, suffix = '', delay = 0 }: { target: number; suffix?: string; delay?: number }) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
   const [hasAnimated, setHasAnimated] = useState(false)
@@ -78,21 +118,26 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
           setHasAnimated(true)
-          let start = 0
-          const duration = 2000
-          const stepTime = 16
-          const steps = duration / stepTime
-          const increment = target / steps
+          // Apply stagger delay before starting the counter
+          const startTimeout = setTimeout(() => {
+            let start = 0
+            const duration = 2000
+            const stepTime = 16
+            const steps = duration / stepTime
+            const increment = target / steps
 
-          const timer = setInterval(() => {
-            start += increment
-            if (start >= target) {
-              setCount(target)
-              clearInterval(timer)
-            } else {
-              setCount(Math.floor(start))
-            }
-          }, stepTime)
+            const timer = setInterval(() => {
+              start += increment
+              if (start >= target) {
+                setCount(target)
+                clearInterval(timer)
+              } else {
+                setCount(Math.floor(start))
+              }
+            }, stepTime)
+          }, delay)
+
+          return () => clearTimeout(startTimeout)
         }
       },
       { threshold: 0.3 }
@@ -100,12 +145,45 @@ function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: str
 
     if (ref.current) observer.observe(ref.current)
     return () => observer.disconnect()
-  }, [target, hasAnimated])
+  }, [target, hasAnimated, delay])
 
   return (
     <span ref={ref} className="count-up">
       {count}{suffix}
     </span>
+  )
+}
+
+// Scroll indicator with bounce
+function ScrollIndicator() {
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setVisible(window.scrollY < 100)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ delay: 1.5, duration: 0.5 }}
+      className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+    >
+      <span className="text-white/50 text-xs tracking-[0.2em] uppercase font-medium">Découvrir</span>
+      <motion.div
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <ChevronDown className="size-6 text-white/60" />
+      </motion.div>
+    </motion.div>
   )
 }
 
@@ -141,6 +219,25 @@ export default function AccueilPage({ content, images, products, partners }: Acc
         <div className="absolute inset-0 opacity-5">
           <div className="pattern-bg w-full h-full" />
         </div>
+
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {particles.map((p) => (
+            <div
+              key={p.id}
+              className="absolute rounded-full bg-white"
+              style={{
+                width: p.size,
+                height: p.size,
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                opacity: p.opacity,
+                animation: `particleFloat ${p.duration}s ease-in-out ${p.delay}s infinite`,
+              }}
+            />
+          ))}
+        </div>
+
         {/* Parallax shapes */}
         <motion.div
           style={{ y: shapeY1 }}
@@ -166,27 +263,33 @@ export default function AccueilPage({ content, images, products, partners }: Acc
                   {content['hero-title'] || 'LA REDOUTE'}
                 </h1>
                 <p className="text-xl sm:text-2xl font-semibold text-white/90">
-                  {content['hero-subtitle'] || 'SARL-U'}
+                  <TypewriterText text={content['hero-subtitle'] || 'SARL-U'} speed={120} />
                 </p>
               </div>
               <p className="text-lg text-white/80 max-w-xl leading-relaxed">
                 {content['hero-description'] || "Distribution professionnelle de pneus, huiles moteurs et produits d'alimentation générale au Togo. Qualité, fiabilité et service exceptionnel."}
               </p>
 
-              {/* Animated Counters in Hero */}
+              {/* Animated Counters with stagger */}
               <div className="flex flex-wrap gap-6 sm:gap-10">
-                {heroCounters.map((counter) => (
-                  <div key={counter.label} className="flex items-center gap-3">
+                {heroCounters.map((counter, index) => (
+                  <motion.div
+                    key={counter.label}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 + index * 0.2, duration: 0.5 }}
+                    className="flex items-center gap-3"
+                  >
                     <div className="w-10 h-10 bg-white/15 backdrop-blur-sm rounded-lg flex items-center justify-center">
                       <counter.icon className="size-5 text-white" />
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-white">
-                        <AnimatedCounter target={counter.value} suffix={counter.suffix} />
+                        <AnimatedCounter target={counter.value} suffix={counter.suffix} delay={index * 200} />
                       </div>
                       <div className="text-xs text-white/60">{counter.label}</div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
@@ -218,6 +321,7 @@ export default function AccueilPage({ content, images, products, partners }: Acc
                     alt="LA REDOUTE SARL-U Logo"
                     width={400}
                     height={400}
+                    style={{ width: 'auto', height: 'auto' }}
                     className="object-contain drop-shadow-2xl"
                     priority
                   />
@@ -226,6 +330,9 @@ export default function AccueilPage({ content, images, products, partners }: Acc
             </div>
           </div>
         </div>
+
+        {/* Scroll down indicator */}
+        <ScrollIndicator />
       </section>
 
       {/* Trusted By Section */}
@@ -273,6 +380,7 @@ export default function AccueilPage({ content, images, products, partners }: Acc
                   src="/products-tires.png"
                   alt="Automobile"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -317,6 +425,7 @@ export default function AccueilPage({ content, images, products, partners }: Acc
                   src="/products-food.png"
                   alt="Agro-alimentaire"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

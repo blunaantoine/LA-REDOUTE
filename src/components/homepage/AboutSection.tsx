@@ -24,6 +24,7 @@ export default function AboutSection({ content, logoAltUrl }: AboutSectionProps)
                 alt="LA REDOUTE Équipe"
                 width={600}
                 height={500}
+                style={{ width: 'auto', height: 'auto' }}
                 className="object-cover w-full h-[500px]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />

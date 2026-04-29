@@ -78,6 +78,7 @@ export default function HeroSection({ content, logoAltUrl }: HeroSectionProps) {
                   alt="LA REDOUTE SARL-U Logo"
                   width={400}
                   height={400}
+                  style={{ width: 'auto', height: 'auto' }}
                   className="object-contain drop-shadow-2xl"
                   priority
                 />

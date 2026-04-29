@@ -57,6 +57,16 @@ export async function POST(request: NextRequest) {
       data: { key, category, title, content },
     })
 
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        action: 'create',
+        resource: 'content',
+        resourceId: siteContent.id,
+        details: `Contenu créé: ${key}`,
+      },
+    })
+
     return NextResponse.json(siteContent, { status: 201 })
   } catch {
     return NextResponse.json(
@@ -87,6 +97,16 @@ export async function PUT(request: NextRequest) {
       data,
     })
 
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        action: 'update',
+        resource: 'content',
+        resourceId: updated.id,
+        details: `Contenu mis à jour: ${updated.key}`,
+      },
+    })
+
     return NextResponse.json(updated)
   } catch (error) {
     console.error('Content PUT error:', error)
@@ -114,7 +134,20 @@ export async function DELETE(request: NextRequest) {
 
     const whereClause = id ? { id } : { key }
 
+    // Get content info before delete
+    const content = await db.siteContent.findUnique({ where: whereClause })
+
     await db.siteContent.delete({ where: whereClause })
+
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        action: 'delete',
+        resource: 'content',
+        resourceId: id || undefined,
+        details: `Contenu supprimé: ${content?.key || key || id}`,
+      },
+    })
 
     return NextResponse.json({ success: true })
   } catch {

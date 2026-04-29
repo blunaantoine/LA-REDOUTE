@@ -231,6 +231,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
                   alt="LA REDOUTE Équipe"
                   width={600}
                   height={500}
+                  style={{ width: 'auto', height: 'auto' }}
                   className="object-cover w-full h-[500px]"
                   unoptimized
                 />
@@ -296,17 +297,22 @@ export default function AboutPage({ content, images }: AboutPageProps) {
               >
                 <blockquote className="text-xl sm:text-2xl font-medium text-white/90 leading-relaxed italic relative">
                   <span className="text-[#00C762] text-4xl font-serif absolute -top-3 -left-4">&ldquo;</span>
-                  <span className="pl-6">{testimonials[currentTestimonial].quote}</span>
+                  <span className="pl-6 block">{testimonials[currentTestimonial].quote}</span>
                   <span className="text-[#00C762] text-4xl font-serif">&rdquo;</span>
                 </blockquote>
-                <div className="pt-2">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
+                  className="pt-2"
+                >
                   <p className="text-white font-semibold text-lg">
                     — {testimonials[currentTestimonial].author}
                   </p>
                   <p className="text-white/60 text-sm">
                     {testimonials[currentTestimonial].role}
                   </p>
-                </div>
+                </motion.div>
               </motion.div>
             </AnimatePresence>
           </div>

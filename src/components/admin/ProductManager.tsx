@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Search, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react'
+import { Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Search, Eye, EyeOff, ArrowUp, ArrowDown, Star, X, Package } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
 import { authFetch } from '@/lib/auth-client'
@@ -22,6 +22,7 @@ interface Product {
   title: string
   description: string | null
   imageUrl: string | null
+  images: string | null
   variants: string | null
   order: number
   isActive: boolean
@@ -83,6 +84,16 @@ const emptyForm: ProductForm = {
   imageFile: null,
 }
 
+function parseImages(imagesStr: string | null): string[] {
+  if (!imagesStr) return []
+  try {
+    const parsed = JSON.parse(imagesStr)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export default function ProductManager() {
   const { toast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
@@ -95,6 +106,8 @@ export default function ProductManager() {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [editForm, setEditForm] = useState<ProductForm>({ ...emptyForm })
+  const [editImages, setEditImages] = useState<string[]>([])
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('')
@@ -241,6 +254,7 @@ export default function ProductManager() {
         }
       }
 
+      const imagesArr = imageUrl ? [imageUrl] : []
       const res = await authFetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -250,6 +264,7 @@ export default function ProductManager() {
           title: form.title,
           description: form.description || null,
           imageUrl: imageUrl || null,
+          images: imagesArr.length > 0 ? JSON.stringify(imagesArr) : null,
           variants: form.variants || null,
           order: 0,
         }),
@@ -271,22 +286,33 @@ export default function ProductManager() {
     }
   }
 
+  const handleUploadAdditionalImage = async (file: File) => {
+    setUploadingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('category', 'product-gallery')
+      const uploadRes = await authFetch('/api/upload', { method: 'POST', body: formData })
+      const uploadData = await uploadRes.json()
+      if (uploadData.success) {
+        return uploadData.url as string
+      }
+      return null
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible d\'uploader l\'image.', variant: 'destructive' })
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const handleEditProduct = async () => {
     if (!editingProduct || !editForm.title) return
 
     setSaving(true)
     try {
-      let imageUrl = editingProduct.imageUrl || ''
-      if (editForm.imageFile) {
-        const formData = new FormData()
-        formData.append('file', editForm.imageFile)
-        formData.append('category', 'edit-product')
-        const uploadRes = await authFetch('/api/upload', { method: 'POST', body: formData })
-        const uploadData = await uploadRes.json()
-        if (uploadData.success) {
-          imageUrl = uploadData.url
-        }
-      }
+      // The primary image is the first in editImages array
+      const primaryImage = editImages.length > 0 ? editImages[0] : null
 
       const res = await authFetch('/api/products', {
         method: 'PUT',
@@ -297,7 +323,8 @@ export default function ProductManager() {
           subcategory: editForm.mainCategory,
           title: editForm.title,
           description: editForm.description || null,
-          imageUrl: imageUrl || null,
+          imageUrl: primaryImage,
+          images: editImages.length > 0 ? JSON.stringify(editImages) : null,
           variants: editForm.variants || null,
         }),
       })
@@ -342,6 +369,14 @@ export default function ProductManager() {
       variants: product.variants || '',
       imageFile: null,
     })
+    // Load images from the JSON field
+    const imagesArr = parseImages(product.images)
+    // If images field is empty but imageUrl exists, use imageUrl as the only image
+    if (imagesArr.length === 0 && product.imageUrl) {
+      setEditImages([product.imageUrl])
+    } else {
+      setEditImages(imagesArr)
+    }
     setEditDialogOpen(true)
   }
 
@@ -349,6 +384,9 @@ export default function ProductManager() {
   const renderProductRow = (product: Product, index: number, group: Product[]) => {
     const isReordering = reorderingId === product.id
     const isToggling = togglingId === product.id
+    const images = parseImages(product.images)
+    const primaryImage = images.length > 0 ? images[0] : product.imageUrl
+    const extraImageCount = images.length > 1 ? images.length - 1 : 0
 
     return (
       <div
@@ -357,10 +395,29 @@ export default function ProductManager() {
           product.isActive ? 'bg-gray-50' : 'bg-gray-50/50 opacity-60'
         }`}
       >
-        <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
-          {product.imageUrl && (
-            <Image src={product.imageUrl} alt={product.title} fill className="object-cover" unoptimized />
-          )}
+        <div className="flex-shrink-0">
+          {/* Thumbnail gallery */}
+          <div className="flex gap-1">
+            <div className="w-20 h-20 bg-gray-200 rounded-lg overflow-hidden relative">
+              {primaryImage && (
+                <Image src={primaryImage} alt={product.title} fill className="object-cover" unoptimized />
+              )}
+            </div>
+            {extraImageCount > 0 && (
+              <div className="flex flex-col gap-1">
+                {images.slice(1, 3).map((img, imgIdx) => (
+                  <div key={imgIdx} className="w-9 h-9 bg-gray-200 rounded overflow-hidden relative">
+                    <Image src={img} alt={`${product.title} ${imgIdx + 2}`} fill className="object-cover" unoptimized />
+                  </div>
+                ))}
+                {images.length > 3 && (
+                  <div className="w-9 h-9 bg-gray-200 rounded flex items-center justify-center text-[10px] font-medium text-gray-500">
+                    +{images.length - 3}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
@@ -688,7 +745,11 @@ export default function ProductManager() {
         </CardHeader>
         <CardContent>
           {agroProducts.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Aucun produit agro-alimentaire</p>
+            <div className="text-center py-12">
+              <Package className="size-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500 text-sm font-medium">Aucun produit agro-alimentaire</p>
+              <p className="text-gray-400 text-xs mt-1">Ajoutez votre premier produit en cliquant sur le bouton ci-dessus</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {agroProducts
@@ -701,7 +762,7 @@ export default function ProductManager() {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Modifier le produit</DialogTitle>
           </DialogHeader>
@@ -761,13 +822,90 @@ export default function ProductManager() {
                   rows={3}
                 />
               </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label>Nouvelle image (laisser vide pour garder l&apos;actuelle)</Label>
+            </div>
+
+            {/* Image Gallery Section */}
+            <div className="space-y-3 pt-2 border-t border-gray-100">
+              <Label className="text-sm font-medium">Galerie d&apos;images</Label>
+              <p className="text-xs text-gray-400">La première image est l&apos;image principale affichée sur le site.</p>
+
+              {/* Current images */}
+              {editImages.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {editImages.map((img, index) => (
+                    <div
+                      key={index}
+                      className={`relative group rounded-lg overflow-hidden border-2 transition-colors ${
+                        index === 0 ? 'border-[#00A651]' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className="aspect-square relative bg-gray-100">
+                        <Image src={img} alt={`Image ${index + 1}`} fill className="object-cover" unoptimized />
+                      </div>
+                      {/* Overlay controls */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        {/* Set as primary */}
+                        {index !== 0 && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="h-8 text-xs gap-1"
+                            onClick={() => {
+                              const newImages = [...editImages]
+                              const img = newImages.splice(index, 1)[0]
+                              newImages.unshift(img)
+                              setEditImages(newImages)
+                            }}
+                          >
+                            <Star className="size-3" />
+                            Principale
+                          </Button>
+                        )}
+                        {/* Delete image */}
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-8 text-xs gap-1"
+                          onClick={() => {
+                            setEditImages(editImages.filter((_, i) => i !== index))
+                          }}
+                        >
+                          <X className="size-3" />
+                        </Button>
+                      </div>
+                      {/* Primary badge */}
+                      {index === 0 && (
+                        <div className="absolute top-1.5 left-1.5 bg-[#00A651] text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                          <Star className="size-2.5" />
+                          Principal
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload new image */}
+              <div className="flex items-center gap-3">
                 <Input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setEditForm({ ...editForm, imageFile: e.target.files?.[0] || null })}
+                  id="edit-additional-image"
+                  className="flex-1"
+                  disabled={uploadingImage}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const url = await handleUploadAdditionalImage(file)
+                    if (url) {
+                      setEditImages([...editImages, url])
+                      toast({ title: 'Image ajoutée', description: 'L\'image a été ajoutée à la galerie.' })
+                    }
+                    // Reset file input
+                    e.target.value = ''
+                  }}
                 />
+                {uploadingImage && <Loader2 className="size-4 animate-spin text-[#00A651]" />}
               </div>
             </div>
           </div>

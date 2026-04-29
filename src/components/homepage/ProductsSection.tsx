@@ -59,6 +59,7 @@ export default function ProductsSection({ content, products }: ProductsSectionPr
                 src="/products-tires.png"
                 alt="Automobile"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -103,6 +104,7 @@ export default function ProductsSection({ content, products }: ProductsSectionPr
                 src="/products-food.png"
                 alt="Agro-alimentaire"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />

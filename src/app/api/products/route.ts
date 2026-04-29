@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (!checkAuth(request)) return unauthorizedResponse()
 
     const body = await request.json()
-    const { category, subcategory, title, description, imageUrl, variants, order } = body
+    const { category, subcategory, title, description, imageUrl, images, variants, order } = body
 
     if (!category || !title) {
       return NextResponse.json(
@@ -58,7 +58,17 @@ export async function POST(request: NextRequest) {
     }
 
     const product = await db.product.create({
-      data: { category, subcategory, title, description, imageUrl, variants, order },
+      data: { category, subcategory, title, description, imageUrl, images, variants, order },
+    })
+
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        action: 'create',
+        resource: 'product',
+        resourceId: product.id,
+        details: `Produit créé: ${title}`,
+      },
     })
 
     return NextResponse.json(product, { status: 201 })
@@ -89,6 +99,21 @@ export async function PUT(request: NextRequest) {
       data,
     })
 
+    // Log activity
+    const actionDesc = data.isActive !== undefined
+      ? (data.isActive ? 'Produit activé' : 'Produit désactivé')
+      : data.order !== undefined
+        ? 'Ordre du produit modifié'
+        : 'Produit mis à jour'
+    await db.activityLog.create({
+      data: {
+        action: 'update',
+        resource: 'product',
+        resourceId: id,
+        details: `${actionDesc}: ${updated.title}`,
+      },
+    })
+
     return NextResponse.json(updated)
   } catch (error) {
     console.error('Product PUT error:', error)
@@ -113,10 +138,23 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
+    // Get product title before soft delete
+    const product = await db.product.findUnique({ where: { id } })
+
     // Soft delete
     await db.product.update({
       where: { id },
       data: { isActive: false },
+    })
+
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        action: 'delete',
+        resource: 'product',
+        resourceId: id,
+        details: `Produit supprimé: ${product?.title || id}`,
+      },
     })
 
     return NextResponse.json({ success: true })

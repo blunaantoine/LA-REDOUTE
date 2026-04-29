@@ -280,7 +280,7 @@ export default function PartnerManager() {
                 <div key={partner.id} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
                   <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0 relative">
                     {partner.logoUrl && (
-                      <Image src={partner.logoUrl} alt={partner.name} fill className="object-cover" unoptimized />
+                      <Image src={partner.logoUrl} alt={partner.name} fill className="object-cover" unoptimized sizes="64px" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
