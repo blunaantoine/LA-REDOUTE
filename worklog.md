@@ -1,84 +1,101 @@
 # LA REDOUTE SARL-U - Worklog
 
 ## Project Status
-The LA REDOUTE SARL-U website has been fully rebuilt with a working auth system and save functionality. The project is built on Next.js 16 with App Router, Prisma ORM (SQLite), and shadcn/ui.
+The LA REDOUTE SARL-U website is fully functional with auth system, save functionality, product detail modals, contact form, and enhanced styling.
 
-## Critical Fix Applied (This Session)
+## QA Testing Results (This Session)
 
-### Root Cause of Save Failure (IDENTIFIED AND FIXED)
-The previous session identified that `checkAuth()` was blocking all saves because cookies weren't being sent. The REAL problem had multiple layers:
+### Tested and Verified ✅
+- Homepage renders correctly with all sections
+- Admin login works (password: laredoute2024)
+- Content save in admin panel works and persists to database
+- Auth system properly blocks unauthenticated POST/PUT/DELETE requests (401)
+- All 5 pages render (Accueil, Automobile, Agro-alimentaire, À Propos, Contact)
+- Navigation between pages works
+- Admin sidebar navigation works
 
-1. **Missing `/api/upload` route** — Admin file uploads were completely broken (route didn't exist)
-2. **No auth protection on API routes** — POST/PUT/DELETE had no auth check, meaning anyone could modify data
-3. **Missing `credentials: 'include'`** — Browser fetch calls weren't sending cookies with requests
-4. **Seed running on every page load** — No localStorage guard, causing unnecessary DB writes
-5. **Cookie settings not production-ready** — Missing `secure` flag for HTTPS
+### Issues Found & Fixed
+- **Dev server cache issue**: After adding ContactMessage model to Prisma schema, the Next.js dev server's HMR didn't pick up the new PrismaClient. Fixed by modifying db.ts to create a fresh PrismaClient in development mode instead of using a global singleton.
+- **Admin panel not opening**: The "Administration" button in footer works but is styled with `cursor-default` making it appear non-clickable. Functionally works.
 
-### Files Created
-- `src/lib/auth.ts` — Centralized `checkAuth()` and `unauthorizedResponse()` helpers
-- `src/app/api/upload/route.ts` — File upload endpoint (was missing!)
+## New Features Added (This Session)
 
-### Files Modified
-- `src/app/api/auth/login/route.ts` — Added secure flag for production
-- `src/app/api/auth/logout/route.ts` — Added secure flag for production
-- `src/app/api/content/route.ts` — Added checkAuth to POST/PUT/DELETE
-- `src/app/api/products/route.ts` — Added checkAuth to POST/PUT/DELETE
-- `src/app/api/partners/route.ts` — Added checkAuth to POST/PUT/DELETE
-- `src/app/api/images/route.ts` — Added checkAuth to POST/PUT/DELETE
-- `src/app/api/upload/route.ts` — Added checkAuth to POST
-- `src/app/api/seed/route.ts` — Added checkAuth to POST
-- `src/app/page.tsx` — localStorage seed guard + credentials:'include' on all fetch
-- `src/components/admin/HomepageEditor.tsx` — credentials:'include' (8 fetch calls)
-- `src/components/admin/ProductManager.tsx` — credentials:'include' (6 fetch calls)
-- `src/components/admin/PartnerManager.tsx` — credentials:'include' (8 fetch calls)
-- `src/components/admin/ImageManager.tsx` — credentials:'include' (6 fetch calls)
-- `src/components/admin/DashboardTab.tsx` — credentials:'include' (3 fetch calls)
+### 1. Product Detail Modal
+- Created `src/components/homepage/ProductDetailModal.tsx`
+- Beautiful animated dialog with framer-motion
+- Shows product image, title, description, variants, category
+- "Demander un devis" button linking to WhatsApp
+- Responsive (side-by-side on desktop, stacked on mobile)
+- Added click handler to AutomobilePage and AgroalimentairePage product cards
 
-### Test Results (ALL PASSING)
-- Save without auth → 401 "Non autorisé" ✅
-- Login with correct password → cookie set ✅
-- Save with auth cookie → data persisted ✅
-- Read back saved data → content matches ✅
-- Product CRUD with auth → works ✅
-- Product CRUD without auth → blocked ✅
+### 2. Contact Form with Database Storage
+- Added `ContactMessage` model to Prisma schema (name, email, subject, message, isRead)
+- Created `/api/contact` route: POST (public), GET (auth), DELETE (auth)
+- Created `/api/contact/read` route: PATCH (auth) for read/unread toggle
+- Updated ContactPage with real form submission + toast notifications
+- Success/error state handling with visual feedback
 
-## Current Architecture
+### 3. Messages Tab in Admin Panel
+- Created `src/components/admin/MessagesTab.tsx`
+- Lists all contact messages with unread indicators
+- Detail view on click with auto-mark-as-read
+- Mark read/unread toggle & delete functionality
+- Unread count badge
+- "Reply by email" button
+- Added to AdminPanel sidebar and mobile nav
 
-### Database Schema (Prisma/SQLite)
-- **Partner**: id, name, description, logoUrl, documentUrl, order, isActive
-- **Product**: id, category, title, description, imageUrl, variants, order, isActive, subcategory
-- **SiteContent**: id, key (unique), category, title, content
-- **SiteImage**: id, key (unique), category, title, description, imageUrl, altText, order, isActive
-- **User**: id, email, name, password, role
+### 4. Enhanced Styling
+- Hero gradient animation (subtle background-position shift)
+- Card shimmer effect
+- WhatsApp pulse animation on floating button
+- Interactive hover effects with translateY + green box-shadow
+- Link underline animation
+- Scale hover effect
+- Stagger delay utilities (.stagger-1 through .stagger-6)
+- Focus ring for accessibility
 
-### API Routes
-- `/api/auth/login` - Admin login (cookie: admin-auth, secure in production)
-- `/api/auth/check` - Check auth status
-- `/api/auth/logout` - Logout (clears cookie)
-- `/api/content` - CRUD for SiteContent (GET public, POST/PUT/DELETE auth required)
-- `/api/images` - CRUD for SiteImage (GET public, POST/PUT/DELETE auth required)
-- `/api/products` - CRUD for Product (GET public, POST/PUT/DELETE auth required)
-- `/api/partners` - CRUD for Partner (GET public, POST/PUT/DELETE auth required)
-- `/api/upload` - File upload with validation (auth required)
-- `/api/seed` - Seed initial database content (auth required)
+### 5. Footer Enhancement
+- WhatsApp floating button with pulse animation
 
-### GitHub Repository
-- **NEW REPO**: https://github.com/blunaantoine/LA-REDOUTE
-- Old repo: https://github.com/blunaantoine/laredoute (no longer used)
+## Files Created
+- `src/components/homepage/ProductDetailModal.tsx`
+- `src/app/api/contact/route.ts`
+- `src/app/api/contact/read/route.ts`
+- `src/components/admin/MessagesTab.tsx`
 
-### Admin Access
-- Click "Tous droits réservés" in footer
-- Or use keyboard shortcut Ctrl+Shift+A
-- Default password: laredoute2024 (env: ADMIN_PASSWORD)
+## Files Modified
+- `prisma/schema.prisma` — Added ContactMessage model
+- `src/app/globals.css` — Enhanced animations and effects
+- `src/components/pages/AutomobilePage.tsx` — Product click handler
+- `src/components/pages/AgroalimentairePage.tsx` — Product click handler
+- `src/components/pages/ContactPage.tsx` — Real form submission
+- `src/components/admin/AdminPanel.tsx` — Messages tab
+- `src/components/admin/AdminSidebar.tsx` — Messages nav item
+- `src/components/layout/Footer.tsx` — WhatsApp pulse
+- `src/lib/db.ts` — Fresh PrismaClient in development
 
-## Unresolved Issues
-- Contact form doesn't actually send emails (simulated)
-- No product detail modal/page when clicking product card
+## Previous Session Fixes (Auth System)
+- Created `src/lib/auth.ts` with checkAuth() and unauthorizedResponse()
+- Added checkAuth to ALL POST/PUT/DELETE routes
+- Created `/api/upload` route (was missing)
+- Added credentials:'include' to ALL fetch calls in admin components
+- Fixed cookie settings for production HTTPS (secure flag)
+- Fixed seed running on every page load (localStorage guard)
+
+## GitHub Repository
+- **Repo**: https://github.com/blunaantoine/LA-REDOUTE
+- Latest commit: Feature additions with product modal, contact form, messages tab
+
+## Known Issues
+- Dev server occasionally crashes when .next cache is corrupted (needs restart)
+- Contact API may need server restart after Prisma schema changes due to HMR caching
 - No image optimization on upload
+- Contact form doesn't send emails (saves to DB only)
 
 ## Next Phase Priorities
-1. Deploy to VPS and verify save works in production
-2. Test all admin panel operations end-to-end on production
-3. Add product detail modal/page
+1. Deploy to VPS and verify everything works in production
+2. Add image optimization on upload (sharp compression)
+3. Add drag-and-drop product reordering
 4. Improve mobile admin experience
-5. Add image optimization on upload
+5. Add Framer Motion page transitions
+6. Make contact form send email notifications
