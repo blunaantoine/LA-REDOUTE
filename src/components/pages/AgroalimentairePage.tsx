@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Wheat, UtensilsCrossed, GlassWater, Sprout, Search, ArrowLeft, ChevronLeft } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
+import ProductDetailModal from '@/components/homepage/ProductDetailModal'
 
 interface Product {
   id: string
@@ -36,6 +37,7 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
   const { navigateTo } = useNavigation()
   const [activeSubcategory, setActiveSubcategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   const agroProducts = products.filter(p => p.subcategory === 'agroalimentaire' && p.isActive)
 
@@ -160,7 +162,9 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
                       </div>
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {subProducts.map(product => (
-                          <AgroProductCard key={product.id} product={product} categoryLabels={categoryLabels} />
+                          <div key={product.id} onClick={() => setSelectedProduct(product)} className="cursor-pointer">
+                            <AgroProductCard product={product} categoryLabels={categoryLabels} />
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -169,7 +173,9 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredProducts.map(product => (
-                    <AgroProductCard key={product.id} product={product} categoryLabels={categoryLabels} />
+                    <div key={product.id} onClick={() => setSelectedProduct(product)} className="cursor-pointer">
+                      <AgroProductCard product={product} categoryLabels={categoryLabels} />
+                    </div>
                   ))}
                 </div>
               )}
@@ -177,6 +183,13 @@ export default function AgroalimentairePage({ content, products }: Agroalimentai
           )}
         </div>
       </section>
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        open={selectedProduct !== null}
+        onClose={() => setSelectedProduct(null)}
+      />
 
       {/* CTA */}
       <section className="py-16 bg-white">

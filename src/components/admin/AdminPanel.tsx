@@ -8,6 +8,7 @@ import HomepageEditor from './HomepageEditor'
 import ProductManager from './ProductManager'
 import ImageManager from './ImageManager'
 import PartnerManager from './PartnerManager'
+import MessagesTab from './MessagesTab'
 
 interface AdminPanelProps {
   isAuthenticated: boolean
@@ -40,6 +41,8 @@ export default function AdminPanel({ isAuthenticated, onLogin, onLogout, onClose
         return <ImageManager />
       case 'partners':
         return <PartnerManager />
+      case 'messages':
+        return <MessagesTab />
       default:
         return <DashboardTab />
     }
@@ -75,6 +78,7 @@ export default function AdminPanel({ isAuthenticated, onLogin, onLogout, onClose
             { id: 'products', label: 'Produits' },
             { id: 'images', label: 'Images' },
             { id: 'partners', label: 'Partenaires' },
+            { id: 'messages', label: 'Messages' },
           ].map((tab) => (
             <button
               key={tab.id}

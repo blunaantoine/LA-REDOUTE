@@ -128,7 +128,7 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
         href="https://wa.me/22892501944"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-xl hover:scale-110 transition-transform whatsapp-pulse"
         aria-label="WhatsApp"
       >
         <MessageCircle className="size-7 text-white" />

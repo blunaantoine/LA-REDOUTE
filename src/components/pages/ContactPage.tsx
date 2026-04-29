@@ -7,8 +7,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowLeft, Phone, Mail, MapPin, Clock, Send, MessageCircle, Building, Car, Wheat, Info } from 'lucide-react'
+import { ArrowLeft, Phone, Mail, MapPin, Clock, Send, MessageCircle, Building, Car, Wheat, Info, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 import { useNavigation } from '@/context/NavigationContext'
+import { useToast } from '@/hooks/use-toast'
 
 interface ContactPageProps {
   content: Record<string, string>
@@ -16,6 +17,7 @@ interface ContactPageProps {
 
 export default function ContactPage({ content }: ContactPageProps) {
   const { navigateTo } = useNavigation()
+  const { toast } = useToast()
   const [formState, setFormState] = useState({
     name: '',
     email: '',
@@ -25,16 +27,53 @@ export default function ContactPage({ content }: ContactPageProps) {
   })
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSending(true)
-    // Simulate sending - in production this would go to an API
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setSent(true)
-    setSending(false)
-    setFormState({ name: '', email: '', phone: '', subject: '', message: '' })
-    setTimeout(() => setSent(false), 5000)
+    setError('')
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formState.name,
+          email: formState.email,
+          subject: formState.subject || null,
+          message: formState.message,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Erreur lors de l\'envoi du message.')
+      }
+
+      setSent(true)
+      setFormState({ name: '', email: '', phone: '', subject: '', message: '' })
+
+      toast({
+        title: 'Message envoyé !',
+        description: 'Votre message a été envoyé avec succès. Nous vous répondrons bientôt.',
+        duration: 5000,
+      })
+
+      setTimeout(() => setSent(false), 5000)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Une erreur est survenue.'
+      setError(errorMessage)
+      toast({
+        title: 'Erreur',
+        description: errorMessage,
+        variant: 'destructive',
+        duration: 5000,
+      })
+    } finally {
+      setSending(false)
+    }
   }
 
   const contactInfo = [
@@ -147,8 +186,16 @@ export default function ContactPage({ content }: ContactPageProps) {
                   </div>
 
                   {sent && (
-                    <div className="mb-6 p-4 bg-[#00A651]/10 border border-[#00A651]/20 rounded-lg">
+                    <div className="mb-6 p-4 bg-[#00A651]/10 border border-[#00A651]/20 rounded-lg flex items-start gap-3">
+                      <CheckCircle2 className="size-5 text-[#00A651] mt-0.5 shrink-0" />
                       <p className="text-[#00A651] font-medium">Votre message a été envoyé avec succès ! Nous vous répondrons bientôt.</p>
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                      <AlertCircle className="size-5 text-red-600 mt-0.5 shrink-0" />
+                      <p className="text-red-700 font-medium">{error}</p>
                     </div>
                   )}
 
@@ -162,6 +209,7 @@ export default function ContactPage({ content }: ContactPageProps) {
                           onChange={(e) => setFormState({ ...formState, name: e.target.value })}
                           placeholder="Votre nom"
                           required
+                          disabled={sending}
                         />
                       </div>
                       <div className="space-y-2">
@@ -173,6 +221,7 @@ export default function ContactPage({ content }: ContactPageProps) {
                           onChange={(e) => setFormState({ ...formState, email: e.target.value })}
                           placeholder="votre@email.com"
                           required
+                          disabled={sending}
                         />
                       </div>
                     </div>
@@ -184,16 +233,17 @@ export default function ContactPage({ content }: ContactPageProps) {
                           value={formState.phone}
                           onChange={(e) => setFormState({ ...formState, phone: e.target.value })}
                           placeholder="+228 XX XX XX XX"
+                          disabled={sending}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="subject">Sujet *</Label>
+                        <Label htmlFor="subject">Sujet</Label>
                         <Input
                           id="subject"
                           value={formState.subject}
                           onChange={(e) => setFormState({ ...formState, subject: e.target.value })}
                           placeholder="Objet de votre message"
-                          required
+                          disabled={sending}
                         />
                       </div>
                     </div>
@@ -206,16 +256,20 @@ export default function ContactPage({ content }: ContactPageProps) {
                         placeholder="Décrivez votre demande..."
                         rows={5}
                         required
+                        disabled={sending}
                       />
                     </div>
                     <Button
                       type="submit"
                       size="lg"
-                      className="bg-[#00A651] hover:bg-[#008541] text-white w-full sm:w-auto"
+                      className="bg-[#00A651] hover:bg-[#008541] text-white w-full sm:w-auto btn-primary-hover"
                       disabled={sending}
                     >
                       {sending ? (
-                        <>Envoi en cours...</>
+                        <>
+                          <Loader2 className="mr-2 size-4 animate-spin" />
+                          Envoi en cours...
+                        </>
                       ) : (
                         <>
                           <Send className="mr-2 size-4" />

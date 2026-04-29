@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutDashboard, Home, Package, Image as ImageIcon, Users, LogOut } from 'lucide-react'
+import { LayoutDashboard, Home, Package, Image as ImageIcon, Users, Mail, LogOut } from 'lucide-react'
 import Image from 'next/image'
 
 interface AdminSidebarProps {
@@ -16,6 +16,7 @@ const navItems = [
   { id: 'products', label: 'Produits', icon: Package },
   { id: 'images', label: 'Images', icon: ImageIcon },
   { id: 'partners', label: 'Partenaires', icon: Users },
+  { id: 'messages', label: 'Messages', icon: Mail },
 ]
 
 export default function AdminSidebar({ activeTab, onTabChange, onLogout, onClose }: AdminSidebarProps) {
