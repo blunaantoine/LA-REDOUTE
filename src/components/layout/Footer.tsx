@@ -1,6 +1,7 @@
 'use client'
 
-import { MessageCircle, Phone } from 'lucide-react'
+import { useState } from 'react'
+import { MessageCircle, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation, PageName } from '@/context/NavigationContext'
 
@@ -19,13 +20,14 @@ const quickLinks: { label: string; page: PageName }[] = [
 
 export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
   const { navigateTo } = useNavigation()
+  const [bankInfoOpen, setBankInfoOpen] = useState(false)
 
   return (
     <footer className="bg-[#1a1a1a] text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
           {/* Company Info */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <Image
               src={logoUrl}
               alt="LA REDOUTE SARL-U"
@@ -39,7 +41,7 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <h3 className="font-semibold text-white">Liens Rapides</h3>
             <ul className="space-y-2">
               {quickLinks.map((link) => (
@@ -56,9 +58,19 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
           </div>
 
           {/* Bank Info */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-white">Coordonnées Bancaires</h3>
-            <div className="text-sm text-gray-400 space-y-2">
+          <div className="space-y-3 sm:space-y-4">
+            {/* Mobile: collapsible toggle */}
+            <button
+              onClick={() => setBankInfoOpen(!bankInfoOpen)}
+              className="md:hidden w-full flex items-center justify-between font-semibold text-white"
+              aria-expanded={bankInfoOpen}
+            >
+              <span>Coordonnées Bancaires</span>
+              {bankInfoOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+            </button>
+            {/* Desktop: always visible heading */}
+            <h3 className="hidden md:block font-semibold text-white">Coordonnées Bancaires</h3>
+            <div className={`text-sm text-gray-400 space-y-2 ${bankInfoOpen ? 'block' : 'hidden'} md:block`}>
               <p className="font-medium text-gray-300">UTB</p>
               <p>Compte: 322114950004000</p>
               <p>Devise: XOF</p>
@@ -66,7 +78,7 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
           </div>
 
           {/* Contact & Social */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <h3 className="font-semibold text-white">Contact</h3>
             <div className="text-sm text-gray-400 space-y-2">
               <p>Lomé, Togo</p>
@@ -105,15 +117,46 @@ export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
         </div>
       </div>
 
+      {/* Mobile Quick Contact Bar */}
+      <div className="md:hidden border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-center gap-4">
+            <a
+              href="tel:+22822251898"
+              className="flex items-center justify-center w-12 h-12 bg-[#00A651] rounded-full hover:bg-[#008541] transition-colors"
+              aria-label="Appeler"
+            >
+              <Phone className="size-5 text-white" />
+            </a>
+            <a
+              href="https://wa.me/22892501944"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-12 h-12 bg-[#25D366] rounded-full hover:bg-[#1da851] transition-colors"
+              aria-label="WhatsApp"
+            >
+              <MessageCircle className="size-5 text-white" />
+            </a>
+            <a
+              href="mailto:contact@laredoutesarl.com"
+              className="flex items-center justify-center w-12 h-12 bg-[#00A651] rounded-full hover:bg-[#008541] transition-colors"
+              aria-label="Email"
+            >
+              <Mail className="size-5 text-white" />
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Bottom bar */}
       <div className="border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-sm text-gray-400">
             <p>
               © {new Date().getFullYear()} LA REDOUTE SARL-U.{' '}
               <button
                 onClick={onOpenAdmin}
-                className="hover:text-gray-300 transition-colors cursor-default"
+                className="hover:text-gray-200 transition-colors cursor-pointer underline decoration-white/20 underline-offset-2 hover:decoration-white/50"
                 aria-label="Administration"
               >
                 Tous droits réservés.

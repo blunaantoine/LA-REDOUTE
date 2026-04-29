@@ -583,6 +583,20 @@ html {
   transform: translateY(0);
 }
 
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area padding for bottom-fixed elements on mobile */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* 10. Admin panel - Save button pulse for unsaved changes */
 .save-pulse {
   animation: savePulse 2s ease-in-out infinite;

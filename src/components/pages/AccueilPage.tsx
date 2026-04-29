@@ -7,6 +7,7 @@ import { ArrowRight, Award, HeadphonesIcon, Heart, Car, Wheat } from 'lucide-rea
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 import PartnersSection from '@/components/homepage/PartnersSection'
+import ScrollReveal from '@/components/ui/scroll-reveal'
 
 interface Product {
   id: string
@@ -139,6 +140,7 @@ export default function AccueilPage({ content, images, products, partners }: Acc
       </section>
 
       {/* Products Overview */}
+      <ScrollReveal>
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
@@ -241,6 +243,7 @@ export default function AccueilPage({ content, images, products, partners }: Acc
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Values Section */}
       <section className="py-20 bg-white">
@@ -254,8 +257,9 @@ export default function AccueilPage({ content, images, products, partners }: Acc
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {values.map((value) => (
-              <Card key={value.title} className="text-center border-0 shadow-lg card-hover">
+            {values.map((value, index) => (
+              <ScrollReveal key={value.title} delay={index * 0.1}>
+              <Card className="text-center border-0 shadow-lg card-hover">
                 <CardContent className="p-8 space-y-4">
                   <div className="w-16 h-16 bg-[#00A651]/10 rounded-2xl flex items-center justify-center mx-auto">
                     <value.icon className="size-8 text-[#00A651]" />
@@ -264,15 +268,19 @@ export default function AccueilPage({ content, images, products, partners }: Acc
                   <p className="text-gray-600">{value.description}</p>
                 </CardContent>
               </Card>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* Partners Section */}
-      <PartnersSection partners={partners} />
+      <ScrollReveal>
+        <PartnersSection partners={partners} />
+      </ScrollReveal>
 
       {/* CTA Section */}
+      <ScrollReveal delay={0.2}>
       <section className="py-20 bg-[#00A651] relative overflow-hidden">
         <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
@@ -305,6 +313,7 @@ export default function AccueilPage({ content, images, products, partners }: Acc
           </div>
         </div>
       </section>
+      </ScrollReveal>
     </div>
   )
 }

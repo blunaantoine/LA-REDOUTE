@@ -23,7 +23,7 @@ export default function HeroSection({ content, logoAltUrl }: HeroSectionProps) {
       <div className="absolute bottom-20 left-10 w-48 h-48 border border-white/10 rounded-full" />
       <div className="absolute top-40 left-1/4 w-24 h-24 border border-white/5 rotate-45" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-[375px]:py-16 sm:py-20 w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left content */}
           <div className="space-y-8 animate-fade-in-up">
@@ -32,22 +32,22 @@ export default function HeroSection({ content, logoAltUrl }: HeroSectionProps) {
             </Badge>
 
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white tracking-tight">
+              <h1 className="text-3xl min-[375px]:text-4xl sm:text-5xl lg:text-7xl font-bold text-white tracking-tight">
                 {content['hero-title'] || 'LA REDOUTE'}
               </h1>
-              <p className="text-xl sm:text-2xl font-semibold text-white/90">
+              <p className="text-lg min-[375px]:text-xl sm:text-2xl font-semibold text-white/90">
                 {content['hero-subtitle'] || 'SARL-U'}
               </p>
             </div>
 
-            <p className="text-lg text-white/80 max-w-xl leading-relaxed">
+            <p className="text-base min-[375px]:text-lg text-white/80 max-w-xl leading-relaxed">
               {content['hero-description'] || "Distribution professionnelle de pneus, huiles moteurs et produits d'alimentation générale au Togo. Qualité, fiabilité et service exceptionnel."}
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button
                 size="lg"
-                className="bg-white text-[#00A651] hover:bg-white/90 font-semibold btn-primary-hover"
+                className="bg-white text-[#00A651] hover:bg-white/90 font-semibold btn-primary-hover w-full sm:w-auto"
                 asChild
               >
                 <a href="#produits">
@@ -58,7 +58,7 @@ export default function HeroSection({ content, logoAltUrl }: HeroSectionProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/30 text-white hover:bg-white/10 bg-transparent"
+                className="border-white/30 text-white hover:bg-white/10 bg-transparent w-full sm:w-auto"
                 asChild
               >
                 <a href="#contact">
@@ -88,10 +88,11 @@ export default function HeroSection({ content, logoAltUrl }: HeroSectionProps) {
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <a href="#about" className="text-white/60 hover:text-white transition-colors">
-          <ArrowDown className="size-8" />
+      <div className="absolute bottom-4 min-[375px]:bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+        <a href="#about" className="text-white/60 hover:text-white transition-colors animate-bounce">
+          <ArrowDown className="size-6 min-[375px]:size-8" />
         </a>
+        <span className="text-white/40 text-[10px] min-[375px]:text-xs tracking-widest uppercase">Découvrir</span>
       </div>
     </section>
   )

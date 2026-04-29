@@ -8,6 +8,7 @@ import { Target, Eye, ArrowLeft, Users, MapPin, Clock, Shield, TrendingUp, Quote
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import ScrollReveal from '@/components/ui/scroll-reveal'
 
 interface AboutPageProps {
   content: Record<string, string>
@@ -92,14 +93,16 @@ export default function AboutPage({ content, images }: AboutPageProps) {
       <section className="py-12 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
+            {stats.map((stat, index) => (
+              <ScrollReveal key={stat.label} delay={index * 0.1}>
+              <div className="text-center">
                 <div className="w-12 h-12 bg-[#00A651]/10 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <stat.icon className="size-6 text-[#00A651]" />
                 </div>
                 <div className="text-3xl font-bold text-[#1a1a1a]">{stat.value}</div>
                 <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
               </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -158,6 +161,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
       </section>
 
       {/* Story Section */}
+      <ScrollReveal>
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -208,6 +212,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
       {/* Mission & Vision */}
       <section className="py-20 bg-gray-50">
@@ -221,6 +226,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
+            <ScrollReveal delay={0}>
             <Card className="border-[#00A651]/20 hover:border-[#00A651]/40 transition-colors">
               <CardContent className="p-8 space-y-4">
                 <div className="w-14 h-14 bg-[#00A651]/10 rounded-xl flex items-center justify-center">
@@ -232,6 +238,8 @@ export default function AboutPage({ content, images }: AboutPageProps) {
                 </p>
               </CardContent>
             </Card>
+            </ScrollReveal>
+            <ScrollReveal delay={0.1}>
             <Card className="border-[#00A651]/20 hover:border-[#00A651]/40 transition-colors">
               <CardContent className="p-8 space-y-4">
                 <div className="w-14 h-14 bg-[#00A651]/10 rounded-xl flex items-center justify-center">
@@ -243,6 +251,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
                 </p>
               </CardContent>
             </Card>
+            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -275,8 +284,9 @@ export default function AboutPage({ content, images }: AboutPageProps) {
                 title: 'Engagement',
                 description: 'Nous nous engageons envers nos partenaires et notre communauté pour un développement durable. La confiance se construit sur la constance.',
               },
-            ].map((value) => (
-              <Card key={value.title} className="text-center border-0 shadow-lg card-hover">
+            ].map((value, index) => (
+              <ScrollReveal key={value.title} delay={index * 0.1}>
+              <Card className="text-center border-0 shadow-lg card-hover">
                 <CardContent className="p-8 space-y-4">
                   <div className="w-16 h-16 bg-[#00A651]/10 rounded-2xl flex items-center justify-center mx-auto">
                     <value.icon className="size-8 text-[#00A651]" />
@@ -285,6 +295,7 @@ export default function AboutPage({ content, images }: AboutPageProps) {
                   <p className="text-gray-600">{value.description}</p>
                 </CardContent>
               </Card>
+              </ScrollReveal>
             ))}
           </div>
         </div>

@@ -10,9 +10,10 @@ import ContactPage from '@/components/pages/ContactPage'
 import AdminPanel from '@/components/admin/AdminPanel'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { Loader2 } from 'lucide-react'
+import LoadingSkeleton from '@/components/ui/loading-skeleton'
 import { saveAuthToken, getAuthToken, clearAuthToken, authFetch } from '@/lib/auth-client'
 import BackToTop from '@/components/ui/back-to-top'
+import PageTransition from '@/components/ui/page-transition'
 
 interface SiteContent {
   id: string
@@ -193,14 +194,7 @@ function SiteContent() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center space-y-4">
-          <Loader2 className="size-12 animate-spin text-[#00A651] mx-auto" />
-          <p className="text-gray-500 font-medium">Chargement...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSkeleton />
   }
 
   const renderPage = () => {
@@ -224,7 +218,9 @@ function SiteContent() {
     <div className="min-h-screen flex flex-col">
       <Header logoUrl={images['logo-main'] || '/logo-main.png'} />
       <main className="flex-1">
-        {renderPage()}
+        <PageTransition pageKey={currentPage}>
+          {renderPage()}
+        </PageTransition>
       </main>
       <Footer
         logoUrl={images['logo-main'] || '/logo-main.png'}

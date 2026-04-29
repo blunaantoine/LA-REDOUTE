@@ -139,23 +139,23 @@ export default function ContactPage({ content }: ContactPageProps) {
       </section>
 
       {/* Contact Info Cards */}
-      <section className="py-12 bg-white border-b border-gray-100">
+      <section className="py-6 sm:py-12 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {contactInfo.map((info) => (
               <Card key={info.title} className="border-0 shadow-md card-hover">
-                <CardContent className="p-6 text-center space-y-3">
-                  <div className="w-12 h-12 bg-[#00A651]/10 rounded-xl flex items-center justify-center mx-auto">
-                    <info.icon className="size-6 text-[#00A651]" />
+                <CardContent className="p-3 sm:p-6 text-center space-y-1 sm:space-y-3">
+                  <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#00A651]/10 rounded-lg sm:rounded-xl flex items-center justify-center mx-auto">
+                    <info.icon className="size-4 sm:size-6 text-[#00A651]" />
                   </div>
-                  <h3 className="font-semibold text-[#1a1a1a]">{info.title}</h3>
+                  <h3 className="font-semibold text-[#1a1a1a] text-xs sm:text-base">{info.title}</h3>
                   {info.details.map((detail, i) => (
-                    <p key={i} className="text-sm text-gray-600">{detail}</p>
+                    <p key={i} className="text-xs sm:text-sm text-gray-600">{detail}</p>
                   ))}
                   {info.action && (
                     <a
                       href={info.action}
-                      className="inline-flex items-center text-sm text-[#00A651] hover:underline font-medium"
+                      className="inline-flex items-center text-xs sm:text-sm text-[#00A651] hover:underline font-medium"
                     >
                       {info.actionLabel}
                     </a>
@@ -170,9 +170,9 @@ export default function ContactPage({ content }: ContactPageProps) {
       {/* Contact Form + Bank Info */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-3 gap-12">
-            {/* Contact Form */}
-            <div className="lg:col-span-2">
+          <div className="grid lg:grid-cols-3 gap-8 sm:gap-12">
+            {/* Contact Form (appears BELOW sidebar on mobile) */}
+            <div className="lg:col-span-2 order-last lg:order-first">
               <Card className="border-0 shadow-lg">
                 <CardContent className="p-6 sm:p-8">
                   <div className="flex items-center gap-3 mb-6">
@@ -282,8 +282,8 @@ export default function ContactPage({ content }: ContactPageProps) {
               </Card>
             </div>
 
-            {/* Sidebar - Bank Info & WhatsApp */}
-            <div className="space-y-6">
+            {/* Sidebar - Bank Info & WhatsApp (appears ABOVE form on mobile) */}
+            <div className="order-first lg:order-last space-y-6">
               {/* Bank Info */}
               <Card className="border-0 shadow-lg">
                 <CardContent className="p-6">
@@ -363,6 +363,29 @@ export default function ContactPage({ content }: ContactPageProps) {
           </div>
         </div>
       </section>
+
+      {/* Sticky mobile action buttons */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white border-t border-gray-200 shadow-[0_-4px_12px_rgba(0,0,0,0.1)] safe-area-pb">
+        <div className="flex gap-0">
+          <a
+            href="tel:+22822251898"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[#00A651] text-white font-semibold text-sm active:bg-[#008541] transition-colors"
+          >
+            <Phone className="size-4" />
+            Appeler
+          </a>
+          <div className="w-px bg-white/20" />
+          <a
+            href="https://wa.me/22892501944"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[#25D366] text-white font-semibold text-sm active:bg-[#1da851] transition-colors"
+          >
+            <MessageCircle className="size-4" />
+            WhatsApp
+          </a>
+        </div>
+      </div>
     </div>
   )
 }

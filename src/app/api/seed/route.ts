@@ -28,6 +28,30 @@ const DEFAULT_CONTENTS = [
   { key: 'agro-page-subtitle', category: 'agroalimentaire', content: 'Des produits de qualité pour votre alimentation' },
 ]
 
+const DEFAULT_PRODUCTS = [
+  // Automobile - Pneus
+  { category: 'pneus', subcategory: 'automobile', title: 'Michelin Energy Saver', description: 'Pneu tourisme été haute performance avec faible résistance au roulement', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.23 (2).jpeg', variants: '175/65R14, 185/65R15, 195/65R15, 205/55R16', order: 1 },
+  { category: 'pneus', subcategory: 'automobile', title: 'BFGoodrich Advantage', description: 'Pneu tourisme polyvalent pour toutes les conditions', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.23.jpeg', variants: '185/65R15, 195/65R15, 205/55R16, 215/55R17', order: 2 },
+  { category: 'pneus', subcategory: 'automobile', title: 'Michelin Agilis+', description: 'Pneu utilitaire léger robuste et durable', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.23 (1).jpeg', variants: '195/65R15C, 205/65R16C, 215/65R16C', order: 3 },
+  // Automobile - Huiles
+  { category: 'huiles', subcategory: 'automobile', title: 'Total Quartz 9000 5W-30', description: 'Huile moteur synthétique pour performances optimales', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.24 (1).jpeg', variants: '1L, 4L, 5L, 208L', order: 1 },
+  { category: 'huiles', subcategory: 'automobile', title: 'Total Quartz 7000 10W-40', description: 'Huile moteur semi-synthétique pour usage quotidien', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.24.jpeg', variants: '1L, 4L, 5L', order: 2 },
+  { category: 'huiles', subcategory: 'automobile', title: 'Total Rubia 15W-40', description: 'Huile moteur diesel pour véhicules utilitaires', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.23 (3).jpeg', variants: '5L, 20L, 208L', order: 3 },
+  // Automobile - Accessoires
+  { category: 'accessoires', subcategory: 'automobile', title: 'Filtre à air universel', description: 'Filtre haute qualité pour une admission d\'air optimale', variants: 'Universel, Sur mesure', order: 1 },
+  { category: 'accessoires', subcategory: 'automobile', title: 'Liquide de frein DOT4', description: 'Liquide de frein haute performance', variants: '500ml, 1L', order: 2 },
+  // Agro-alimentaire - Alimentation
+  { category: 'alimentation', subcategory: 'agroalimentaire', title: 'Riz La Rizière Premium', description: 'Riz long grain de qualité supérieure', imageUrl: '/uploads/products/la-riziere.jpg', variants: '1kg, 5kg, 10kg, 25kg, 50kg', order: 1 },
+  { category: 'alimentation', subcategory: 'agroalimentaire', title: 'Riz Malaika', description: 'Riz parfumé de haute qualité', imageUrl: '/uploads/products/malaika-rice-2.jpg', variants: '1kg, 5kg, 10kg, 25kg', order: 2 },
+  { category: 'alimentation', subcategory: 'agroalimentaire', title: 'Aïcha Riz', description: 'Riz de qualité pour la cuisine quotidienne', imageUrl: '/uploads/products/aicha-riz.jpg', variants: '1kg, 5kg, 10kg', order: 3 },
+  { category: 'alimentation', subcategory: 'agroalimentaire', title: 'Huile Aïcha', description: 'Huile végétale de qualité pour la cuisine', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.23 (4).jpeg', variants: '1L, 5L, 10L, 20L', order: 4 },
+  // Agro-alimentaire - Boissons
+  { category: 'boissons', subcategory: 'agroalimentaire', title: 'Jus de fruits Aïcha', description: 'Jus de fruits naturel aux saveurs variées', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.25.jpeg', variants: '33cl, 1L', order: 1 },
+  // Agro-alimentaire - Céréales
+  { category: 'cereales', subcategory: 'agroalimentaire', title: 'Farine de blé Aïcha', description: 'Farine de blé premium pour pâtisserie et cuisine', imageUrl: '/uploads/products/WhatsApp Image 2026-04-27 at 11.08.25 (3).jpeg', variants: '1kg, 5kg, 25kg, 50kg', order: 1 },
+  { category: 'cereales', subcategory: 'agroalimentaire', title: 'Semoule de blé', description: 'Semoule fine pour couscous et pâtisseries', variants: '1kg, 5kg, 25kg', order: 2 },
+]
+
 const DEFAULT_IMAGES = [
   { key: 'logo-main', category: 'logo', title: 'Logo Principal', imageUrl: '/logo-main.png' },
   { key: 'logo-alt', category: 'logo', title: 'Logo Alternatif', imageUrl: '/logo-alt.png' },
@@ -72,11 +96,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Seed Products
+    let productsCreated = 0
+    for (const item of DEFAULT_PRODUCTS) {
+      const existing = await db.product.findFirst({ where: { title: item.title } })
+      if (!existing) {
+        await db.product.create({ data: item })
+        productsCreated++
+      }
+    }
+
     return NextResponse.json({
       success: true,
       contentCreated,
       imagesCreated,
-      totalCreated: contentCreated + imagesCreated,
+      productsCreated,
+      totalCreated: contentCreated + imagesCreated + productsCreated,
     })
   } catch {
     return NextResponse.json(

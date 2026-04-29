@@ -9,6 +9,7 @@ import { Car, CircleDot, Droplets, Wrench, Search, ArrowLeft, ChevronRight } fro
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
 import ProductDetailModal from '@/components/homepage/ProductDetailModal'
+import ScrollReveal from '@/components/ui/scroll-reveal'
 
 interface Product {
   id: string
@@ -162,10 +163,12 @@ export default function AutomobilePage({ content, products }: AutomobilePageProp
                         <Badge variant="secondary" className="bg-[#00A651]/10 text-[#00A651]">{subProducts.length}</Badge>
                       </div>
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {subProducts.map(product => (
-                          <div key={product.id} onClick={() => setSelectedProduct(product)} className="cursor-pointer">
+                        {subProducts.map((product, index) => (
+                          <ScrollReveal key={product.id} delay={index * 0.05}>
+                          <div onClick={() => setSelectedProduct(product)} className="cursor-pointer">
                             <ProductCard product={product} categoryLabels={categoryLabels} />
                           </div>
+                          </ScrollReveal>
                         ))}
                       </div>
                     </div>
@@ -173,10 +176,12 @@ export default function AutomobilePage({ content, products }: AutomobilePageProp
                 })
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredProducts.map(product => (
-                    <div key={product.id} onClick={() => setSelectedProduct(product)} className="cursor-pointer">
+                  {filteredProducts.map((product, index) => (
+                    <ScrollReveal key={product.id} delay={index * 0.05}>
+                    <div onClick={() => setSelectedProduct(product)} className="cursor-pointer">
                       <ProductCard product={product} categoryLabels={categoryLabels} />
                     </div>
+                    </ScrollReveal>
                   ))}
                 </div>
               )}
@@ -190,6 +195,12 @@ export default function AutomobilePage({ content, products }: AutomobilePageProp
         product={selectedProduct}
         open={selectedProduct !== null}
         onClose={() => setSelectedProduct(null)}
+        relatedProducts={selectedProduct
+          ? autoProducts
+              .filter(p => p.category === selectedProduct.category && p.id !== selectedProduct.id)
+              .slice(0, 4)
+          : []
+        }
       />
 
       {/* CTA */}
@@ -229,7 +240,7 @@ export default function AutomobilePage({ content, products }: AutomobilePageProp
 
 function ProductCard({ product, categoryLabels }: { product: Product; categoryLabels: Record<string, string> }) {
   return (
-    <Card className="overflow-hidden card-hover border-0 shadow-md group">
+    <Card className="overflow-hidden card-hover border border-gray-100 shadow-md group hover:scale-[1.02] transition-transform duration-300">
       <div className="relative h-48 bg-gray-100 overflow-hidden">
         {product.imageUrl ? (
           <Image
@@ -244,9 +255,23 @@ function ProductCard({ product, categoryLabels }: { product: Product; categoryLa
             <Car className="size-12 text-gray-300" />
           </div>
         )}
+        {/* Gradient overlay at bottom */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+        {/* Category badge */}
         <Badge className="absolute top-3 left-3 bg-[#00A651] text-white text-xs">
           {categoryLabels[product.category] || product.category}
         </Badge>
+        {/* Available indicator */}
+        <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/90 backdrop-blur-sm rounded-full px-2 py-0.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+          <span className="text-[10px] font-medium text-gray-600">Disponible</span>
+        </div>
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-center justify-center">
+          <span className="text-white font-semibold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+            Voir détails
+          </span>
+        </div>
       </div>
       <CardContent className="p-4">
         <h3 className="font-semibold text-[#1a1a1a] mb-1 line-clamp-1">{product.title}</h3>
