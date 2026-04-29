@@ -16,6 +16,7 @@ import {
   Inbox,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { authFetch } from '@/lib/auth-client'
 
 interface ContactMessage {
   id: string
@@ -40,9 +41,7 @@ export default function MessagesTab() {
   const fetchMessages = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/contact', {
-        credentials: 'include',
-      })
+      const res = await authFetch('/api/contact')
       if (!res.ok) throw new Error('Erreur lors du chargement des messages.')
       const data = await res.json()
       setMessages(data.messages || [])
@@ -65,10 +64,9 @@ export default function MessagesTab() {
   const handleMarkAsRead = async (id: string, isRead: boolean) => {
     setMarkingRead(id)
     try {
-      const res = await fetch('/api/contact/read', {
+      const res = await authFetch('/api/contact/read', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ id, isRead: !isRead }),
       })
       if (!res.ok) throw new Error('Erreur lors de la mise à jour.')
@@ -94,9 +92,8 @@ export default function MessagesTab() {
   const handleDelete = async (id: string) => {
     setDeleting(id)
     try {
-      const res = await fetch(`/api/contact?id=${id}`, {
+      const res = await authFetch(`/api/contact?id=${id}`, {
         method: 'DELETE',
-        credentials: 'include',
       })
       if (!res.ok) throw new Error('Erreur lors de la suppression.')
       if (selectedMessage?.id === id) {

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
+import { authFetch } from '@/lib/auth-client'
 
 interface Product {
   id: string
@@ -84,7 +85,7 @@ export default function ProductManager() {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const res = await fetch('/api/products?all=true', { credentials: 'include' })
+      const res = await authFetch('/api/products?all=true')
       const data = await res.json()
       setProducts(Array.isArray(data) ? data : [])
     } catch (error) {
@@ -111,16 +112,15 @@ export default function ProductManager() {
         const formData = new FormData()
         formData.append('file', form.imageFile)
         formData.append('category', form.subcategory)
-        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+        const uploadRes = await authFetch('/api/upload', { method: 'POST', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
         }
       }
 
-      const res = await fetch('/api/products', {
+      const res = await authFetch('/api/products', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: form.subcategory,
@@ -159,16 +159,15 @@ export default function ProductManager() {
         const formData = new FormData()
         formData.append('file', editForm.imageFile)
         formData.append('category', 'edit-product')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+        const uploadRes = await authFetch('/api/upload', { method: 'POST', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
         }
       }
 
-      const res = await fetch('/api/products', {
+      const res = await authFetch('/api/products', {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingProduct.id,
@@ -199,7 +198,7 @@ export default function ProductManager() {
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('Supprimer ce produit ?')) return
     try {
-      const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE', credentials: 'include' })
+      const res = await authFetch(`/api/products?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
         toast({ title: 'Produit supprimé' })
         fetchProducts()

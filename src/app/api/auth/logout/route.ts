@@ -6,6 +6,7 @@ export async function POST() {
 
     const isProduction = process.env.NODE_ENV === 'production'
 
+    // Clear the auth cookie
     response.cookies.set('admin-auth', '', {
       httpOnly: true,
       secure: isProduction,
@@ -13,6 +14,9 @@ export async function POST() {
       maxAge: 0,
       path: '/',
     })
+
+    // Note: Client-side code must also clear localStorage token
+    // This is handled by the clearAuthToken() function in auth-client.ts
 
     return response
   } catch {

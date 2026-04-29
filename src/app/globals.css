@@ -353,3 +353,266 @@ html {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ========================================
+   ENHANCED ANIMATIONS & EFFECTS
+   ======================================== */
+
+/* 1. Reveal on scroll animation */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 2. Counter animation */
+.count-up {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes countPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.count-up.animating {
+  animation: countPulse 0.3s ease-out;
+}
+
+/* 3. Glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.dark .glass-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* 4. Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #00C762 0%, #00A651 50%, #008541 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 5. Ripple effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease, opacity 0.6s ease;
+  opacity: 0;
+}
+
+.ripple:active::after {
+  width: 300px;
+  height: 300px;
+  opacity: 0;
+  transition: 0s;
+}
+
+@keyframes rippleWave {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple-active::after {
+  animation: rippleWave 0.6s ease-out;
+}
+
+/* 6. Smooth page transition */
+.page-enter {
+  animation: pageEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-exit {
+  animation: pageExit 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes pageExit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* 7. Skeleton loading */
+.skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 37%,
+    #e5e7eb 63%
+  );
+  background-size: 400% 100%;
+  animation: skeletonPulse 1.4s ease infinite;
+  border-radius: 8px;
+}
+
+.dark .skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.12) 37%,
+    rgba(255, 255, 255, 0.06) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeletonPulse 1.4s ease infinite;
+}
+
+@keyframes skeletonPulse {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Skeleton variant shapes */
+.skeleton-pulse-circle {
+  border-radius: 50%;
+}
+
+.skeleton-pulse-text {
+  height: 1em;
+  border-radius: 4px;
+}
+
+.skeleton-pulse-heading {
+  height: 1.5em;
+  width: 60%;
+  border-radius: 4px;
+}
+
+/* 8. Toast notification enhancement */
+@keyframes toastSlideIn {
+  from {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.toast-enter {
+  animation: toastSlideIn 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.toast-exit {
+  animation: toastSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.toast-progress {
+  animation: toastProgress 4s linear forwards;
+}
+
+/* 9. Hover glow effect */
+.glow-hover {
+  transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 20px rgba(0, 166, 81, 0.3), 0 0 40px rgba(0, 166, 81, 0.1);
+  transform: translateY(-2px);
+}
+
+.glow-hover:active {
+  box-shadow: 0 0 10px rgba(0, 166, 81, 0.2);
+  transform: translateY(0);
+}
+
+/* 10. Admin panel - Save button pulse for unsaved changes */
+.save-pulse {
+  animation: savePulse 2s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(0, 166, 81, 0.5);
+}
+
+@keyframes savePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 166, 81, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 166, 81, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 166, 81, 0);
+  }
+}
+
+.save-pulse-urgent {
+  animation: savePulseUrgent 1s ease-in-out infinite;
+}
+
+@keyframes savePulseUrgent {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 38, 38, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}

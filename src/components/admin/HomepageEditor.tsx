@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { Loader2, Save, FileText, Image as ImageIcon, Plus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
+import { authFetch } from '@/lib/auth-client'
 
 interface SiteContent {
   id: string
@@ -96,8 +97,8 @@ export default function HomepageEditor() {
   const fetchData = useCallback(async () => {
     try {
       const [contentRes, imagesRes] = await Promise.all([
-        fetch('/api/content', { credentials: 'include' }),
-        fetch('/api/images', { credentials: 'include' }),
+        authFetch('/api/content'),
+        authFetch('/api/images'),
       ])
       const contentData = await contentRes.json()
       const imageData = await imagesRes.json()
@@ -123,9 +124,8 @@ export default function HomepageEditor() {
   const saveContent = async (key: string) => {
     setSaving(key)
     try {
-      const res = await fetch('/api/content', {
+      const res = await authFetch('/api/content', {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key, content: editedContents[key] }),
       })
@@ -133,7 +133,12 @@ export default function HomepageEditor() {
         toast({ title: 'Contenu sauvegardé', description: `Le contenu "${key}" a été mis à jour.` })
         fetchData()
       } else {
-        toast({ title: 'Erreur', description: 'Impossible de sauvegarder le contenu.', variant: 'destructive' })
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 401) {
+          toast({ title: 'Session expirée', description: 'Veuillez vous reconnecter.', variant: 'destructive' })
+        } else {
+          toast({ title: 'Erreur', description: data.error || 'Impossible de sauvegarder le contenu.', variant: 'destructive' })
+        }
       }
     } catch {
       toast({ title: 'Erreur', description: 'Erreur de connexion.', variant: 'destructive' })
@@ -149,9 +154,8 @@ export default function HomepageEditor() {
     }
     setAddingContent(true)
     try {
-      const res = await fetch('/api/content', {
+      const res = await authFetch('/api/content', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: newContent.key,
@@ -178,7 +182,7 @@ export default function HomepageEditor() {
   const handleDeleteContent = async (key: string) => {
     if (!confirm(`Supprimer le contenu "${key}" ?`)) return
     try {
-      const res = await fetch(`/api/content?key=${key}`, { method: 'DELETE', credentials: 'include' })
+      const res = await authFetch(`/api/content?key=${key}`, { method: 'DELETE' })
       if (res.ok) {
         toast({ title: 'Contenu supprimé' })
         fetchData()
@@ -202,7 +206,7 @@ export default function HomepageEditor() {
         const formData = new FormData()
         formData.append('file', uploadFile)
         formData.append('category', newImage.category)
-        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+        const uploadRes = await authFetch('/api/upload', { method: 'POST', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
@@ -211,9 +215,8 @@ export default function HomepageEditor() {
         }
       }
 
-      const res = await fetch('/api/images', {
+      const res = await authFetch('/api/images', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: newImage.key,
@@ -245,7 +248,7 @@ export default function HomepageEditor() {
   const handleDeleteImage = async (id: string) => {
     if (!confirm('Supprimer cette image ?')) return
     try {
-      const res = await fetch(`/api/images?id=${id}`, { method: 'DELETE', credentials: 'include' })
+      const res = await authFetch(`/api/images?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
         toast({ title: 'Image supprimée' })
         fetchData()
@@ -333,7 +336,6 @@ export default function HomepageEditor() {
           {/* Content sections by page */}
           {contentSections.map((section) => {
             const sectionContents = contents.filter((c) => section.keys.includes(c.key))
-            const otherContents = contents.filter((c) => !section.keys.includes(c.key) && !contentSections.some(s => s.keys.includes(c.key) && s.key !== section.key))
 
             return (
               <Card key={section.key} className="border-0 shadow-md">

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { ArrowRight, Award, HeadphonesIcon, Heart, Car, Wheat } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
+import PartnersSection from '@/components/homepage/PartnersSection'
 
 interface Product {
   id: string
@@ -19,10 +20,21 @@ interface Product {
   isActive: boolean
 }
 
+interface Partner {
+  id: string
+  name: string
+  description: string | null
+  logoUrl: string | null
+  documentUrl: string | null
+  order: number
+  isActive: boolean
+}
+
 interface AccueilPageProps {
   content: Record<string, string>
   images: Record<string, string>
   products: Product[]
+  partners: Partner[]
 }
 
 const values = [
@@ -43,7 +55,7 @@ const values = [
   },
 ]
 
-export default function AccueilPage({ content, images, products }: AccueilPageProps) {
+export default function AccueilPage({ content, images, products, partners }: AccueilPageProps) {
   const { navigateTo } = useNavigation()
 
   const autoProducts = products.filter(p => p.subcategory === 'automobile' && p.isActive)
@@ -256,6 +268,9 @@ export default function AccueilPage({ content, images, products }: AccueilPagePr
           </div>
         </div>
       </section>
+
+      {/* Partners Section */}
+      <PartnersSection partners={partners} />
 
       {/* CTA Section */}
       <section className="py-20 bg-[#00A651] relative overflow-hidden">

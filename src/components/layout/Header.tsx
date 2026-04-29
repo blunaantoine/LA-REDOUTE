@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Phone } from 'lucide-react'
 import Image from 'next/image'
@@ -20,7 +20,17 @@ const navLinks: { label: string; page: PageName }[] = [
 
 export default function Header({ logoUrl }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const { currentPage, navigateTo } = useNavigation()
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const handleNavClick = (page: PageName) => {
     navigateTo(page)
@@ -28,9 +38,15 @@ export default function Header({ logoUrl }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm">
+    <header className={`sticky top-0 z-40 backdrop-blur-md border-b transition-all duration-300 ${
+      scrolled
+        ? 'bg-white shadow-md border-gray-200/80'
+        : 'bg-white/95 shadow-sm border-gray-100'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className={`flex items-center justify-between transition-all duration-300 ${
+          scrolled ? 'h-14 sm:h-16' : 'h-16 sm:h-20'
+        }`}>
           {/* Logo */}
           <button
             onClick={() => handleNavClick('accueil')}
@@ -41,7 +57,7 @@ export default function Header({ logoUrl }: HeaderProps) {
               alt="LA REDOUTE SARL-U"
               width={160}
               height={48}
-              className="h-10 sm:h-12 w-auto object-contain"
+              className={`h-8 sm:h-10 w-auto object-contain transition-all duration-300 ${scrolled ? '' : 'sm:h-12'}`}
               priority
             />
           </button>

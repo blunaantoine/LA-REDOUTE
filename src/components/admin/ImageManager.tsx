@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useToast } from '@/hooks/use-toast'
+import { authFetch } from '@/lib/auth-client'
 
 interface SiteImage {
   id: string
@@ -62,7 +63,7 @@ export default function ImageManager() {
 
   const fetchImages = useCallback(async () => {
     try {
-      const res = await fetch('/api/images', { credentials: 'include' })
+      const res = await authFetch('/api/images')
       const data = await res.json()
       setImages(Array.isArray(data) ? data : [])
     } catch (error) {
@@ -89,16 +90,15 @@ export default function ImageManager() {
         const formData = new FormData()
         formData.append('file', uploadFile)
         formData.append('category', newImage.category)
-        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+        const uploadRes = await authFetch('/api/upload', { method: 'POST', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
         }
       }
 
-      const res = await fetch('/api/images', {
+      const res = await authFetch('/api/images', {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: newImage.key,
@@ -137,16 +137,15 @@ export default function ImageManager() {
         const formData = new FormData()
         formData.append('file', editFile)
         formData.append('category', 'edit-image')
-        const uploadRes = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData })
+        const uploadRes = await authFetch('/api/upload', { method: 'POST', body: formData })
         const uploadData = await uploadRes.json()
         if (uploadData.success) {
           imageUrl = uploadData.url
         }
       }
 
-      const res = await fetch('/api/images', {
+      const res = await authFetch('/api/images', {
         method: 'PUT',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingImage.id,
@@ -176,7 +175,7 @@ export default function ImageManager() {
   const handleDeleteImage = async (id: string) => {
     if (!confirm('Supprimer cette image ?')) return
     try {
-      const res = await fetch(`/api/images?id=${id}`, { method: 'DELETE', credentials: 'include' })
+      const res = await authFetch(`/api/images?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
         toast({ title: 'Image supprimée' })
         fetchImages()

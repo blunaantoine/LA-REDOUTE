@@ -1,11 +1,13 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Target, Eye, ArrowLeft, Users, MapPin, Clock, Shield, TrendingUp } from 'lucide-react'
+import { Target, Eye, ArrowLeft, Users, MapPin, Clock, Shield, TrendingUp, Quote } from 'lucide-react'
 import Image from 'next/image'
 import { useNavigation } from '@/context/NavigationContext'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface AboutPageProps {
   content: Record<string, string>
@@ -19,8 +21,41 @@ const stats = [
   { label: 'Partenaires', value: '50+', icon: TrendingUp },
 ]
 
+const testimonials = [
+  {
+    quote: "LA REDOUTE SARL-U est un partenaire fiable et professionnel. La qualité de leurs produits et la réactivité de leur service client sont remarquables. Nous travaillons ensemble depuis plus de 5 ans et la confiance n'a fait que grandir.",
+    author: 'Amadou K.',
+    role: 'Gérant, Garage Auto Lomé',
+  },
+  {
+    quote: "Grâce à LA REDOUTE, nous avons accès à des produits agro-alimentaires de qualité supérieure à des prix compétitifs. Leur engagement envers la satisfaction client est exemplaire. Je les recommande sans hésitation.",
+    author: 'Fatima M.',
+    role: 'Directrice, Supermarché Central',
+  },
+  {
+    quote: "Depuis que nous avons choisi LA REDOUTE comme fournisseur, nous n'avons jamais été déçus. Leurs pneus et huiles moteurs sont de première qualité. Le livraison est toujours ponctuelle et l'équipe est très à l'écoute.",
+    author: 'Kofi A.',
+    role: 'Responsable Achats, Transport Express',
+  },
+  {
+    quote: "La diversité de leur catalogue et la rigueur de leur sélection nous permettent de trouver exactement ce dont nous avons besoin. Un partenaire de confiance qui comprend les exigences du marché togolais.",
+    author: 'Afi D.',
+    role: "Chef d'entreprise, Distribution Plus",
+  },
+]
+
 export default function AboutPage({ content, images }: AboutPageProps) {
   const { navigateTo } = useNavigation()
+  const [currentTestimonial, setCurrentTestimonial] = useState(0)
+
+  const nextTestimonial = useCallback(() => {
+    setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(nextTestimonial, 5000)
+    return () => clearInterval(interval)
+  }, [nextTestimonial])
 
   return (
     <div>
@@ -65,6 +100,58 @@ export default function AboutPage({ content, images }: AboutPageProps) {
                 <div className="text-3xl font-bold text-[#1a1a1a]">{stat.value}</div>
                 <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gradient-to-br from-[#00A651] to-[#0d3d2e] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
+        <div className="absolute top-1/2 left-1/4 w-40 h-40 bg-white/3 rounded-full" />
+
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Quote className="size-12 text-white/20 mx-auto mb-8" />
+
+          <div className="min-h-[200px] flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentTestimonial}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5, ease: 'easeInOut' }}
+                className="space-y-6"
+              >
+                <blockquote className="text-xl sm:text-2xl font-medium text-white/90 leading-relaxed italic">
+                  &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
+                </blockquote>
+                <div>
+                  <p className="text-white font-semibold text-lg">
+                    {testimonials[currentTestimonial].author}
+                  </p>
+                  <p className="text-white/60 text-sm">
+                    {testimonials[currentTestimonial].role}
+                  </p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Dots indicator */}
+          <div className="flex justify-center gap-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentTestimonial(index)}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  index === currentTestimonial
+                    ? 'bg-white w-8'
+                    : 'bg-white/30 hover:bg-white/50'
+                }`}
+                aria-label={`Témoignage ${index + 1}`}
+              />
             ))}
           </div>
         </div>

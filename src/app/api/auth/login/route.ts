@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { generateToken } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,9 +15,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const response = NextResponse.json({ success: true })
+    const response = NextResponse.json({
+      success: true,
+      token: generateToken(password), // Bearer token for localStorage-based auth
+    })
 
-    // Determine if we're in production (HTTPS)
+    // Set cookie for cookie-based auth (primary)
     const isProduction = process.env.NODE_ENV === 'production'
 
     response.cookies.set('admin-auth', 'authenticated', {

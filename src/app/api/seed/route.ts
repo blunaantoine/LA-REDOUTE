@@ -39,6 +39,18 @@ export async function POST(request: NextRequest) {
   try {
     if (!checkAuth(request)) return unauthorizedResponse()
 
+    const { searchParams } = new URL(request.url)
+    const reset = searchParams.get('reset') === 'true'
+
+    // If reset=true, delete all existing data first
+    if (reset) {
+      await db.contactMessage.deleteMany()
+      await db.siteContent.deleteMany()
+      await db.siteImage.deleteMany()
+      await db.product.deleteMany()
+      await db.partner.deleteMany()
+    }
+
     let contentCreated = 0
     let imagesCreated = 0
 

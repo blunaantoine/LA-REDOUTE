@@ -11,6 +11,8 @@ import AdminPanel from '@/components/admin/AdminPanel'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { Loader2 } from 'lucide-react'
+import { saveAuthToken, getAuthToken, clearAuthToken, authFetch } from '@/lib/auth-client'
+import BackToTop from '@/components/ui/back-to-top'
 
 interface SiteContent {
   id: string
@@ -44,6 +46,16 @@ interface Product {
   isActive: boolean
 }
 
+interface Partner {
+  id: string
+  name: string
+  description: string | null
+  logoUrl: string | null
+  documentUrl: string | null
+  order: number
+  isActive: boolean
+}
+
 function SiteContent() {
   const { currentPage } = useNavigation()
   const [showAdmin, setShowAdmin] = useState(false)
@@ -51,6 +63,7 @@ function SiteContent() {
   const [content, setContent] = useState<Record<string, string>>({})
   const [images, setImages] = useState<Record<string, string>>({})
   const [products, setProducts] = useState<Product[]>([])
+  const [partners, setPartners] = useState<Partner[]>([])
   const [loading, setLoading] = useState(true)
 
   // Seed database only once ever (localStorage guard)
@@ -71,15 +84,17 @@ function SiteContent() {
   // Fetch site data
   const fetchData = useCallback(async () => {
     try {
-      const [contentRes, imagesRes, productsRes] = await Promise.all([
+      const [contentRes, imagesRes, productsRes, partnersRes] = await Promise.all([
         fetch('/api/content', { credentials: 'include' }),
         fetch('/api/images', { credentials: 'include' }),
         fetch('/api/products', { credentials: 'include' }),
+        fetch('/api/partners', { credentials: 'include' }),
       ])
 
       const contentData: SiteContent[] = await contentRes.json()
       const imageData: SiteImage[] = await imagesRes.json()
       const productsData: Product[] = await productsRes.json()
+      const partnersData: Partner[] = await partnersRes.json()
 
       const contentMap: Record<string, string> = {}
       if (Array.isArray(contentData)) {
@@ -98,6 +113,7 @@ function SiteContent() {
       setContent(contentMap)
       setImages(imageMap)
       setProducts(Array.isArray(productsData) ? productsData : [])
+      setPartners(Array.isArray(partnersData) ? partnersData : [])
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -109,28 +125,35 @@ function SiteContent() {
     fetchData()
   }, [fetchData])
 
-  // Check auth status
+  // Check auth status - dual check: token in localStorage AND API verification
   useEffect(() => {
-    fetch('/api/auth/check', { credentials: 'include' })
-      .then((res) => res.json())
-      .then((data) => {
+    const checkAuthStatus = async () => {
+      // First, check if we have a token stored locally
+      const storedToken = getAuthToken()
+      if (!storedToken) {
+        setIsAuthenticated(false)
+        return
+      }
+
+      // Verify with the server using authFetch (sends both cookie + Bearer token)
+      try {
+        const res = await authFetch('/api/auth/check')
+        const data = await res.json()
         if (data.authenticated) {
           setIsAuthenticated(true)
+        } else {
+          // Token is invalid, clear it
+          clearAuthToken()
+          setIsAuthenticated(false)
         }
-      })
-      .catch(console.error)
-  }, [])
-
-  // Keyboard shortcut Ctrl+Shift+A
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        e.preventDefault()
-        setShowAdmin(true)
+      } catch {
+        // If server check fails but we have a token, still consider authenticated
+        // (graceful degradation for network issues)
+        setIsAuthenticated(true)
       }
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+
+    checkAuthStatus()
   }, [])
 
   // Login handler
@@ -143,7 +166,9 @@ function SiteContent() {
         body: JSON.stringify({ password }),
       })
       const data = await res.json()
-      if (data.success) {
+      if (data.success && data.token) {
+        // Save the Bearer token to localStorage for dual auth
+        saveAuthToken(data.token)
         setIsAuthenticated(true)
         return true
       }
@@ -157,10 +182,13 @@ function SiteContent() {
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-      setIsAuthenticated(false)
-      setShowAdmin(false)
     } catch (error) {
       console.error('Error logging out:', error)
+    } finally {
+      // Always clear local state regardless of server response
+      clearAuthToken()
+      setIsAuthenticated(false)
+      setShowAdmin(false)
     }
   }
 
@@ -178,7 +206,7 @@ function SiteContent() {
   const renderPage = () => {
     switch (currentPage) {
       case 'accueil':
-        return <AccueilPage content={content} images={images} products={products} />
+        return <AccueilPage content={content} images={images} products={products} partners={partners} />
       case 'automobile':
         return <AutomobilePage content={content} products={products} />
       case 'agroalimentaire':
@@ -188,7 +216,7 @@ function SiteContent() {
       case 'contact':
         return <ContactPage content={content} />
       default:
-        return <AccueilPage content={content} images={images} products={products} />
+        return <AccueilPage content={content} images={images} products={products} partners={partners} />
     }
   }
 
@@ -215,6 +243,8 @@ function SiteContent() {
           />
         </div>
       )}
+
+      <BackToTop />
     </div>
   )
 }
