@@ -1,96 +1,139 @@
 # LA REDOUTE SARL-U - Worklog
 
 ## Project Status
-The LA REDOUTE SARL-U website is fully functional with a robust dual-auth system, enhanced styling, and comprehensive admin features. The persistent save issue has been **definitively fixed** with the Bearer token authentication mechanism.
+The LA REDOUTE SARL-U website is fully functional with robust dual-auth, comprehensive features, and polished UI. All core functionality works: auth, CRUD operations, image upload with optimization, page transitions, scroll animations, mobile responsiveness, and SEO.
 
-## Session: 2026-04-30 — Dual Auth Fix & Major Enhancements
+## Session: 2026-04-30 Round 2 — Feature Expansion & Polish
 
-### CRITICAL FIX: Persistent Save Issue Resolved ✅
+### QA Results
+- All API endpoints tested and verified ✅
+- Login returns Bearer token ✅
+- Content save with Bearer auth works ✅  
+- Products API returns 15 seeded products ✅
+- Partners API returns data ✅
+- Images API returns data ✅
+- Lint passes clean ✅
 
-**Root Cause**: In production (HTTPS with reverse proxy), cookies were not being properly sent/received between browser and API. The `checkAuth()` function would reject ALL save operations because the `admin-auth` cookie was never received (Cookie header length: 0).
+### New Features Added This Session
 
-**Solution**: Implemented **dual authentication** mechanism:
-1. **Cookie-based auth** (primary) — Same as before, but more reliable with `sameSite: 'lax'`
-2. **Bearer token auth** (fallback) — Login returns a token stored in localStorage, sent via `Authorization: Bearer <token>` header on every request
+1. **Sharp Image Optimization** (`src/app/api/upload/route.ts`)
+   - Auto-resize to max 1920px width
+   - Convert to WebP format (quality 80) for better compression
+   - PNG with transparency preserved as PNG
+   - Thumbnail generation (400px width, quality 70)
+   - Graceful fallback if Sharp fails
+   - Returns `thumbUrl`, `originalSize`, `optimizedSize`
 
-**Verification**:
-- `curl -s /api/auth/login -d '{"password":"laredoute2024"}'` → returns `{"success":true,"token":"laredoute-admin-bGFyZWRvdXRlMjAyNA=="}`
-- `curl -s /api/content -H "Authorization: Bearer <token>" -d '{"key":"hero-title","content":"test"}'` → saves successfully (200 OK)
-- Content properly persists to SQLite database
+2. **Framer Motion Page Transitions** 
+   - New `PageTransition` component with fade + slide animations
+   - Applied to main page router in `page.tsx`
+   - Smooth 0.4s enter / 0.2s exit transitions
 
-### New Files Created
-- `src/lib/auth-client.ts` — Client-side auth utility with `authFetch()`, `saveAuthToken()`, `getAuthToken()`, `clearAuthToken()`
-- `src/app/api/auth/change-password/route.ts` — Password change endpoint
-- `src/components/admin/SettingsTab.tsx` — Settings page (password, site config, danger zone)
-- `src/components/homepage/PartnersSection.tsx` — Partners showcase section
-- `src/components/ui/back-to-top.tsx` — Floating back-to-top button
+3. **ScrollReveal Component**
+   - New `ScrollReveal` component using `useInView`
+   - Applied to AccueilPage (products, values, partners, CTA sections)
+   - Applied to AutomobilePage (product cards with stagger)
+   - Applied to AboutPage (stats, story, mission/vision, values)
+   - 4 direction support: up, down, left, right
 
-### Modified Files (Key Changes)
-- `src/lib/auth.ts` — Added `checkAuth()` with dual auth (cookie + Bearer token), `generateToken()`, `verifyToken()`
-- `src/app/api/auth/login/route.ts` — Returns token in response body
-- `src/app/api/auth/check/route.ts` — Supports Bearer token verification
-- `src/app/api/auth/logout/route.ts` — Notes client-side localStorage clearing
-- `src/app/page.tsx` — Uses `authFetch`, stores/manages auth token in localStorage
-- `src/components/admin/HomepageEditor.tsx` — Uses `authFetch` instead of raw `fetch`
-- `src/components/admin/ProductManager.tsx` — Uses `authFetch`
-- `src/components/admin/PartnerManager.tsx` — Uses `authFetch`
-- `src/components/admin/ImageManager.tsx` — Uses `authFetch`
-- `src/components/admin/MessagesTab.tsx` — Uses `authFetch`
-- `src/components/admin/DashboardTab.tsx` — Uses `authFetch`, enhanced with welcome banner, quick actions, activity timeline
-- `src/components/admin/AdminLogin.tsx` — Green gradient background, floating lock icon, enhanced UX
-- `src/components/admin/AdminSidebar.tsx` — Active indicator, hover animations, Settings nav item
-- `src/components/admin/AdminPanel.tsx` — Added Settings tab
-- `src/app/globals.css` — 10+ new animation classes (reveal-on-scroll, glass-card, gradient-text, skeleton-pulse, etc.)
-- `src/components/layout/Header.tsx` — Scroll-based styling (opacity, shadow, height)
-- `src/components/pages/AccueilPage.tsx` — Added PartnersSection
-- `src/components/pages/AboutPage.tsx` — Added testimonials section with auto-rotating quotes
+4. **LoadingSkeleton Component**
+   - Beautiful skeleton with hero, products, values, CTA sections
+   - Replaces the simple Loader2 spinner
+   - Uses `skeleton-pulse` CSS animation
 
-### Features Added
-1. **Dual Auth System** — Cookie + Bearer token for reliable authentication in all environments
-2. **Settings Tab** — Password change, site configuration, danger zone (reset DB, clear sessions)
-3. **Partners Section** — Professional partner showcase on homepage
-4. **Back-to-Top Button** — Floating button with framer-motion animation
-5. **Testimonials** — Auto-rotating French testimonials on About page
-6. **Scroll-based Header** — Dynamic header appearance based on scroll position
-7. **10+ CSS Animations** — reveal-on-scroll, glass-card, gradient-text, skeleton-pulse, glow-hover, etc.
-8. **Enhanced Admin Login** — Gradient background, floating lock icon, better UX
-9. **Enhanced Admin Sidebar** — Active indicator, hover animations
-10. **Enhanced Dashboard** — Welcome banner, quick actions, activity timeline
+5. **Mobile Responsive Improvements**
+   - Footer: Quick contact bar (mobile only), collapsible bank info, better admin button
+   - ContactPage: Mobile action bar, sidebar above form on mobile, compact info cards
+   - AdminPanel: Scrollable horizontal nav with indicator, back button, icons-only on small screens
+   - HeroSection: Responsive font sizes for <375px, full-width CTAs, "Découvrir" text
+
+6. **SEO Improvements**
+   - JSON-LD structured data (Organization + LocalBusiness schemas)
+   - Open Graph meta tags with full configuration
+   - Twitter card with summary_large_image
+   - Robots directives, canonical URL, French locale
+   - Category: business
+
+7. **Product Detail Modal Enhancement**
+   - Image zoom-on-hover effect
+   - Share button (copies URL to clipboard)
+   - Related products section (horizontal scroll)
+   - "Sur devis" badge on image
+   - Selectable variant chips
+
+8. **Product Card Enhancement**
+   - Gradient overlay on image bottom
+   - "Voir détails" hover overlay
+   - Visible border (border-gray-100)
+   - Green availability dot indicator
+   - Subtle scale on hover (1.02x)
+
+9. **Product Seeding**
+   - Seed route now creates 15 default products
+   - 8 automobile products (3 pneus, 3 huiles, 2 accessoires)
+   - 7 agro-alimentaire products (4 alimentation, 1 boissons, 2 céréales)
+   - Uses existing uploaded images
+
+10. **CSS Utilities**
+    - `.scrollbar-hide` — hides scrollbar but keeps functionality
+    - `.safe-area-pb` — respects iPhone notch safe area
+
+### Files Created
+- `src/components/ui/page-transition.tsx`
+- `src/components/ui/scroll-reveal.tsx`
+- `src/components/ui/loading-skeleton.tsx`
+
+### Files Modified
+- `src/app/api/upload/route.ts` — Sharp image optimization
+- `src/app/api/seed/route.ts` — Product seeding with 15 defaults
+- `src/app/page.tsx` — PageTransition wrapper, LoadingSkeleton
+- `src/app/layout.tsx` — JSON-LD, SEO meta tags
+- `src/app/globals.css` — scrollbar-hide, safe-area-pb
+- `src/components/homepage/ProductDetailModal.tsx` — Zoom, share, related, variants
+- `src/components/pages/AccueilPage.tsx` — ScrollReveal
+- `src/components/pages/AutomobilePage.tsx` — ScrollReveal, related products
+- `src/components/pages/AgroalimentairePage.tsx` — ScrollReveal, related products
+- `src/components/pages/AboutPage.tsx` — ScrollReveal
+- `src/components/pages/ContactPage.tsx` — Mobile improvements
+- `src/components/layout/Footer.tsx` — Quick contact, collapsible bank
+- `src/components/layout/Header.tsx` — Scroll-based styling
+- `src/components/homepage/HeroSection.tsx` — Mobile responsive
 
 ### GitHub Repository
 - **Repo**: https://github.com/blunaantoine/LA-REDOUTE
-- **Latest commit**: `62693d5` — feat: dual auth system (cookie + Bearer token), Settings tab, enhanced styling
+- **Latest commit**: `93102de` — feat: Sharp, page transitions, scroll reveal, mobile, SEO, products
 
 ### Known Issues
-- Dev server occasionally crashes in sandbox (resource constraints, not a code issue)
-- No image optimization on upload (sharp is available but not integrated)
+- Dev server occasionally crashes in sandbox (resource constraints)
 - Contact form doesn't send emails (saves to DB only)
 - Drag-and-drop product reordering not yet implemented
+- No rate limiting on API endpoints
 
 ### Next Phase Priorities
-1. Deploy to VPS and verify the Bearer token auth works in production
-2. Add image optimization on upload (sharp compression)
-3. Add drag-and-drop product reordering
-4. Make contact form send email notifications
-5. Add Framer Motion page transitions
-6. Improve mobile admin experience
+1. Deploy to VPS and verify Bearer token auth works in production
+2. Add drag-and-drop product reordering
+3. Make contact form send email notifications
+4. Add API rate limiting
+5. Add analytics/visitor tracking
+6. Performance optimization (image lazy loading, code splitting)
+
+---
+
+## Session: 2026-04-30 Round 1 — Dual Auth Fix & Major Enhancements
+
+### CRITICAL FIX: Persistent Save Issue Resolved ✅
+- Implemented dual authentication (cookie + Bearer token)
+- Login returns token stored in localStorage
+- authFetch() sends both cookie and Authorization header
+- Verified with curl: login → token → save → success
+
+### Features Added (Round 1)
+- Dual Auth System, Settings Tab, Partners Section
+- Back-to-Top Button, Testimonials, Scroll-based Header
+- 10+ CSS Animations, Enhanced Admin Login/Sidebar/Dashboard
 
 ---
 
 ## Previous Session: Feature Additions
-
-### Tested and Verified ✅
-- Homepage renders correctly with all sections
-- Admin login works (password: laredoute2024)
-- Content save in admin panel works and persists to database
-- Auth system properly blocks unauthenticated POST/PUT/DELETE requests (401)
-- All 5 pages render (Accueil, Automobile, Agro-alimentaire, À Propos, Contact)
-- Navigation between pages works
-- Admin sidebar navigation works
-
-### Features Added (Previous Session)
-- Product Detail Modal
-- Contact Form with Database Storage
-- Messages Tab in Admin Panel
-- Enhanced Styling (animations, hover effects)
-- WhatsApp floating button with pulse animation
+- Product Detail Modal, Contact Form, Messages Tab
+- Enhanced Styling, WhatsApp floating button
